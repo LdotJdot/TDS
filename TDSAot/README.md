@@ -42,4 +42,4 @@ TDS is currently totally free trial. For more information on licensing, please c
 
 For any questions, suggestions, or feedback, please feel free to open an issue on this repository or contact us directly.
 
-Thank you for choosing TDS! We hope it makes your file management experience seamless and enjoyable.
+Thank you for choosing TDS! We hope it makes your file management experience seamless and enjoyable!
