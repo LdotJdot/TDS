@@ -29,6 +29,7 @@ TDS is a powerful, efficient, and user-friendly application designed to help you
 - **Open Files/Directories**: Double-click on a file or directory to open it directly.
 - **Copy Files**: Right-click on a file and select "Copy" to copy it to your clipboard.
 - **View Properties**: Right-click on a file and select "Properties" to view detailed information about the file.
+- **hotkey**: The ESC key can quickly focus and select the text in the input box. Pressing it again clears the text. The default activation window key is Ctrl+~. The program minimizes to the system tray in the lower right corner after startup by default.
 
 ## Contributing
 
