@@ -1,0 +1,79 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+	  <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+	  <!--<TrimMode>link</TrimMode>-->
+
+	  <PackageIcon>tds32-32.ico</PackageIcon>
+	  <Platforms>AnyCPU;x64;x86</Platforms>
+	  <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+
+	  <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	  <PublishAot>true</PublishAot>
+	  <TrimMode>full</TrimMode>
+	  <InvariantGlobalization>true</InvariantGlobalization>
+	  <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
+	  <IlcOptimizationPreference>Size</IlcOptimizationPreference>
+	  <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
+	  <!-- 对于 Linux，可以尝试更激进的裁剪和静态链接 -->
+	  <SelfContained>true</SelfContained>
+	  <ApplicationIcon>tds32-32.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="libs_native\av_libglesv2.dll" />
+    <None Remove="libs_native\libHarfBuzzSharp.dll" />
+    <None Remove="libs_native\libSkiaSharp.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.4" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.4" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.4" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.4">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EngineCore\EngineCore.csproj" />
+  </ItemGroup>
+	
+	
+  <ItemGroup>
+	  <TrimmerRootAssembly Include="Avalonia.Themes.Fluent" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<!-- 确保XAML文件被标记为AvaloniaResource -->
+		<AvaloniaResource Include="Assets/tds32-32.ico">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <CustomToolNamespace></CustomToolNamespace>
+		</AvaloniaResource>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="tds32-32.ico" />
+	</ItemGroup>
+	
+
+	<ItemGroup>
+	  <Reference Include="ConfigurationReader">
+	    <HintPath>libs\ConfigurationReader.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Assets\tds32-32.ico">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
+</Project>

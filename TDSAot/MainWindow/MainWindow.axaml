@@ -1,0 +1,96 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TDSAot"
+        mc:Ignorable="d"
+        x:Class="TDSAot.MainWindow"
+        Title="TDSAot"
+        x:CompileBindings="True"
+        x:DataType="local:MainWindow"
+		WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+		>
+		
+	
+	<DockPanel LastChildFill="True">
+
+		<!-- 顶部区域 -->
+		<StackPanel DockPanel.Dock="Top">
+			<Grid Margin="0,0,0,10">
+				<TextBox 
+					FontSize="18" 
+					x:Name="inputBox" 
+					Height="40" 
+					Text=""
+					TextChanged="TextChanged" 
+					VerticalAlignment="Bottom"
+					Margin="5,5,5,5"
+					KeyDown="Input_KeyDown"
+					SelectionBrush="#2A8AD0"
+					/>
+
+				<TextBlock FontSize="16" Text="{Binding MessageData.Message, Mode=OneWay}" VerticalAlignment="Center"
+					 HorizontalAlignment="Right" Margin="0,0,10,0" Opacity="0.6" />
+			</Grid>	
+		</StackPanel>
+
+	
+		
+		<!-- 底部自适应区域 -->
+		<Grid DockPanel.Dock="Bottom">
+			<ScrollViewer HorizontalScrollBarVisibility="Auto"
+                         VerticalScrollBarVisibility="Auto">
+
+				<ListBox x:Name="fileListBox" ItemsSource="{Binding Items.DisplayedData, Mode=OneWay}" Background="Transparent"
+						 DoubleTapped="ListBox_MouseDoubleClick"
+						 KeyDown="ListBox_KeyDown"
+						 PointerReleased="ListBoxPointerRelease"
+						 >
+					<!-- 将 ContextMenu 绑定到 ListBox -->
+					<ListBox.ContextMenu>
+						<ContextMenu>
+							<MenuItem Header="Open (Enter)" Click="OpenFile"/>
+							<MenuItem Header="Open with...(Shift+Enter)" Click="OpenFileWith"/>
+							<MenuItem Header="Open folder (Space)" Click="OpenFolder"/>
+							<MenuItem Header="Copy (Ctrl+C)" Click="Copy"/>
+							<MenuItem Header="Copy path (Ctrl+P)" Click="CopyPath"/>
+							<MenuItem Header="Delete (Del)" Click="Delete"/>
+							<MenuItem Header="Property... (Alt+Enter)" Click="ShowProperty"/>
+						</ContextMenu>
+					</ListBox.ContextMenu>
+					 
+					<!-- 正确的 ItemsPanel 配置 -->
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<VirtualizingStackPanel />
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid  ColumnDefinitions="Auto,*" >								
+								<Image Width="32" Height="32" 
+									    Source="{Binding icon, Mode=OneWay}"
+									   Stretch="Uniform"/>
+								<StackPanel Spacing="1"
+											Grid.Column="1"
+									VerticalAlignment="Center"
+									Margin="10,0,0,0">
+
+									<TextBlock Text="{Binding FileName, Mode=OneWay}"
+											  FontSize="16"/>
+									<TextBlock Text="{Binding FilePath, Mode=OneWay}"
+											  Foreground="#888888"
+											  FontSize="12" />
+								</StackPanel>
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</ScrollViewer>
+		</Grid>
+	</DockPanel>
+</Window>
