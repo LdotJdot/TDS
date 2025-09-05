@@ -1,8 +1,11 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Splat;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -86,18 +89,19 @@ namespace TDSAot
         }
 
         private void ListBox_KeyDown(object sender, KeyEventArgs e)
-        {         
-            if (e.Key==Key.Delete)
+        {
+
+
+            if (e.Key == Key.Space)
             {
-                Delete(null, null);
+                Execute(GetSelectedItems(), FileActionType.OpenFolder);
             }
-            else if (e.Key==Key.P && e.KeyModifiers == KeyModifiers.Control)
+            else if (e.Key == Key.LeftCtrl && e.KeyModifiers==KeyModifiers.Control)
             {
-                CopyPath(null, null);
-            }
-            else if (e.Key==Key.C && e.KeyModifiers == KeyModifiers.Control)
-            {
-                Copy(null, null);
+                if (fileListBox.ContextMenu != null && fileListBox.SelectedItem != null)
+                {
+                    fileListBox.ContextMenu.Open();
+                }
             }
             else if (e.Key == Key.Enter)
             {
@@ -113,15 +117,22 @@ namespace TDSAot
                 {
                     Execute(GetSelectedItems(), FileActionType.Open);
                 }
-
             }
-            else if (e.Key == Key.Space)
+            else if (e.Key == Key.C && e.KeyModifiers == KeyModifiers.Control)
             {
-                Execute(GetSelectedItems(), FileActionType.OpenFolder);
-            }           
+                Copy(null, null);
+            }
+            else if (e.Key == Key.P && e.KeyModifiers == KeyModifiers.Control)
+            {
+                CopyPath(null, null);
+            }
+            else if (e.Key == Key.Delete)
+            {
+                Delete(null, null);
+            }
         }
 
-        List<FrnFileOrigin> _selectItemsList = new List<FrnFileOrigin>();
+            List<FrnFileOrigin> _selectItemsList = new List<FrnFileOrigin>();
 
         private FrnFileOrigin[] GetSelectedItems()
         {
