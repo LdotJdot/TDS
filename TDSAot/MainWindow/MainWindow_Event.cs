@@ -4,8 +4,10 @@ using Avalonia.Interactivity;
 
 using Avalonia.Threading;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using TDSAot.Utils;
@@ -52,7 +54,7 @@ namespace TDSAot
         {
             if (fileListBox.SelectedItem is FrnFileOrigin file)
             {
-                fileAction.Execute(file, FileActionType.Open);
+                fileAction.Execute([file], FileActionType.Open);
             }
         }
 
@@ -67,7 +69,7 @@ namespace TDSAot
                         var file = Items.DisplayedData.FirstOrDefault();
                         if (file != null)
                         {
-                            Execute(file, FileActionType.Open);
+                            Execute([file], FileActionType.Open);
                         }
                         break;
 
@@ -84,22 +86,7 @@ namespace TDSAot
         }
 
         private void ListBox_KeyDown(object sender, KeyEventArgs e)
-        {
-
-            //< MenuItem Header = "打开(Enter)" Click = "OpenFile" />
-
-            //            < MenuItem Header = "打开方式...(Shift+Enter)" Click = "OpenFileWith" />
-
-            //            < MenuItem Header = "打开目录(Space)" Click = "OpenFolder" />
-
-            //            < MenuItem Header = "复制(Ctrl+C)" Click = "Copy" />
-
-            //            < MenuItem Header = "复制路径(Ctrl+P)" Click = "CopyPath" />
-
-            //            < MenuItem Header = "删除(Delete)" Click = "Delete" />
-
-            //            < MenuItem Header = "属性(Alt+Enter)" Click = "ShowProperty" />
-
+        {         
             if (e.Key==Key.Delete)
             {
                 Delete(null, null);
@@ -122,38 +109,32 @@ namespace TDSAot
                 {
                     OpenFileWith(null, null);
                 }
-                else if (fileListBox.SelectedItem is FrnFileOrigin file)
+                else
                 {
-                    Execute(file, FileActionType.Open);
+                    Execute(GetSelectedItems(), FileActionType.Open);
                 }
+
             }
             else if (e.Key == Key.Space)
             {
-                if (fileListBox.SelectedItem is FrnFileOrigin file)
-                {
-                    Execute(file, FileActionType.OpenFolder);
-                }
-            }
-            else if (e.Key == Key.Up || e.Key == Key.Down)
+                Execute(GetSelectedItems(), FileActionType.OpenFolder);
+            }           
+        }
+
+        List<FrnFileOrigin> _selectItemsList = new List<FrnFileOrigin>();
+
+        private FrnFileOrigin[] GetSelectedItems()
+        {
+            _selectItemsList.Clear();
+            foreach (var item in fileListBox.SelectedItems ?? new object[] { })
             {
-                try
+                if (item is FrnFileOrigin frn)
                 {
-                    if (fileListBox.ItemCount > 0)
-                    {
-                        if (fileListBox.SelectedIndex > 0)
-                        {
-                            fileListBox.SelectedIndex += (25 - (int)e.Key);
-                        }
-                        else
-                        {
-                            fileListBox.SelectedIndex = 0;
-                        }
-                    }
-                }
-                catch
-                {
+                    _selectItemsList.Add(frn);
                 }
             }
+            return _selectItemsList.ToArray();
         }
     }
+
 }

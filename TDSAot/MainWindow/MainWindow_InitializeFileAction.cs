@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using System.Collections.Generic;
 using TDSAot.Utils;
 using TDSNET.Engine.Actions.USN;
 
@@ -13,8 +14,10 @@ namespace TDSAot
             fileAction = new FileAction(UpdateRecord);
         }
 
-        private void Execute(FrnFileOrigin file, FileActionType action)
+        private void Execute(FrnFileOrigin[] file, FileActionType action)
         {
+            if (file == null || file.Length == 0) { return; }
+
             fileAction.Execute(file, action);
         }
     }

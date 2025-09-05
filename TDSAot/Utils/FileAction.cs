@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using TDSNET.Engine.Actions.USN;
 using TDSNET.Utils;
@@ -25,22 +26,28 @@ namespace TDSAot.Utils
             this.updateRecord = updateRecord;
         }
 
-        internal void Execute(FrnFileOrigin file, FileActionType action)
+        internal void Execute(FrnFileOrigin[] files, FileActionType action)
         {
             switch (action)
             {
                 case FileActionType.Open:
-                    Open(file);
-                    updateRecord?.Invoke(file);
+                    foreach(var file in files)
+                    {
+                        Open(file);
+                        updateRecord?.Invoke(file);
+                    }
                     return;
 
                 case FileActionType.OpenFolder:
-                    OpenFolder(file);
-                    updateRecord?.Invoke(file);
+                    foreach (var file in files)
+                    {
+                        OpenFolder(file);
+                        updateRecord?.Invoke(file);
+                    }
                     return;
 
                 case FileActionType.Delete:
-                    Delete(file);
+                    Delete(files);
                     return;
 
                 default:
@@ -48,37 +55,31 @@ namespace TDSAot.Utils
             }
         }
 
-        internal void Execute(FrnFileOrigin[] files, FileActionType action)
+        private void Delete(FrnFileOrigin[] files)
         {
-            foreach (var file in files)
+            if (files != null && files.Length > 0)
             {
-                Execute(file, action);
-                updateRecord?.Invoke(file);
-            }
-        }
-
-        private void Delete(FrnFileOrigin file)
-        {
-            if (!(file == null))
-            {
-                var path = file.FilePath;
-                if (Message.ShowYesNo("Delete?", file.FilePath))
+                var pathes = files.Select(o=>o.FilePath);
+                if (Message.ShowYesNo("Delete?", string.Join("\r\n", pathes)))
                 {
-                    try
+                    foreach (var path in pathes)
                     {
-                        FileAttributes attr = File.GetAttributes(path);
-                        if (attr == FileAttributes.Directory)
+                        try
                         {
-                            Directory.Delete(path, true);
+                            FileAttributes attr = File.GetAttributes(path);
+                            if (attr == FileAttributes.Directory)
+                            {
+                                Directory.Delete(path, true);
+                            }
+                            else
+                            {
+                                File.Delete(path);
+                            }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            File.Delete(path);
+                            Message.ShowWaringOk("Delete failed", ex.Message);
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        Message.ShowWaringOk("Delete failed", ex.Message);
                     }
                 }
             }

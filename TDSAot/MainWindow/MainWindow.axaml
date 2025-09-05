@@ -48,6 +48,7 @@
 						 DoubleTapped="ListBox_MouseDoubleClick"
 						 KeyDown="ListBox_KeyDown"
 						 PointerReleased="ListBoxPointerRelease"
+						 SelectionMode="Multiple"
 						 >
 					<!-- 将 ContextMenu 绑定到 ListBox -->
 					<ListBox.ContextMenu>
