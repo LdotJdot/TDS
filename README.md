@@ -31,6 +31,7 @@ TDS is a powerful, efficient, and user-friendly application designed to help you
 - **View Properties**: Right-click on a file and select "Properties" to view detailed information about the file.
 - **Hotkey**:  The default activation window key is Ctrl+~ (You can change the key setting in the conf.json file). The program minimizes to the system tray in the lower right corner after startup by default. The ESC key can quickly focus and select the text in the input box. Pressing it again clears the text. Ctrl to open the ContextMenu of selected item. 
 
+
 ## Contributing
 
 TDS is set to be open-sourced soon! We welcome any contributions, suggestions, and feedback to help improve the application. Stay tuned for the open-source release and feel free to fork the repository and submit pull requests.
