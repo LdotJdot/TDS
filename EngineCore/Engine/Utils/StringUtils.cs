@@ -11,7 +11,7 @@ namespace TDSNET.Engine.Utils
         {
             if (f.parentFrn != null)
             {
-                tailStr = string.Concat("\\", PathHelper.getfilePath(f.fileName), tailStr).AsSpan();
+                tailStr = string.Concat("\\", PathHelper.getfileName(f.fileName), tailStr).AsSpan();
                 return GetPathStr(f.parentFrn, tailStr);
             }
             else

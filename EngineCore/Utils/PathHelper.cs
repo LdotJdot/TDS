@@ -8,13 +8,41 @@ namespace TDSNET.Utils
 {
     public static class PathHelper
     {
+        private static string FormatBytes(long bytes)
+        {
+            return bytes switch
+            {
+                < 1024L => $"{bytes:0.###} B",
+                < 1048576L => $"{(bytes / 1024.0):0.###} KB",
+                < 1073741824L => $"{(bytes / 1048576.0):0.###} MB",
+                < 1099511627776L => $"{(bytes / 1073741824.0):0.###} GB",
+                < 1125899906842624L => $"{(bytes / 1099511627776.0):0.###} TB",
+                _ => $"{(bytes / 1125899906842624.0):0.###} PB"
+            };
+        }
+
 
         /// <summary>
         ///  二进制转换逻辑搜索使用
         /// </summary>
         /// <param name="txt"></param>
         /// <returns></returns>
-        public static ReadOnlySpan<char> getfilePath(ReadOnlySpan<char> filename)
+        public static string getFileInfoStr(FrnFileOrigin f)
+        {
+            var fileInfo = new FileInfo(GetPath(f).ToString());
+
+            if (fileInfo.Exists)
+            {
+               return $"{FormatBytes(fileInfo.Length)}  {fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")}";
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+        public static ReadOnlySpan<char> getfileName(ReadOnlySpan<char> filename)
         {
             var index1 = filename.IndexOf('|');
             if (index1 < 0) return ReadOnlySpan<char>.Empty;

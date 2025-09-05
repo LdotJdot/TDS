@@ -19,7 +19,7 @@
 
 		<!-- 顶部区域 -->
 		<StackPanel DockPanel.Dock="Top">
-			<Grid Margin="0,0,0,10">
+			<Grid Margin="0,0,0,5">
 				<TextBox 
 					FontSize="18" 
 					x:Name="inputBox" 
@@ -75,13 +75,15 @@
 								<Image Width="32" Height="32" 
 									    Source="{Binding icon, Mode=OneWay}"
 									   Stretch="Uniform"/>
-								<StackPanel Spacing="1"
-											Grid.Column="1"
-									VerticalAlignment="Center"
-									Margin="10,0,0,0">
-
-									<TextBlock Text="{Binding FileName, Mode=OneWay}"
-											  FontSize="16"/>
+								<StackPanel Spacing="1" Grid.Column="1" VerticalAlignment="Center" Margin="6,0,0,0">
+									<Grid ColumnDefinitions="Auto,*">
+										<TextBlock Text="{Binding FileName, Mode=OneWay}" FontSize="16" VerticalAlignment="Center"/>
+										<TextBlock Grid.Column="1" Text="{Binding FileInfo, Mode=OneWay}"
+												  Foreground="#888888"
+												  VerticalAlignment="Center"
+												  FontSize="12" 
+												  Margin="8,0,0,0"/>										
+									</Grid>
 									<TextBlock Text="{Binding FilePath, Mode=OneWay}"
 											  Foreground="#888888"
 											  FontSize="12" />

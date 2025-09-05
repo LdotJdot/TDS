@@ -151,7 +151,7 @@ namespace TDSAot.Utils
                     Message.ShowWaringOk("Open failed", ex.Message);
                 }
 
-                var ext = Path.GetExtension(PathHelper.getfilePath(file.fileName));
+                var ext = Path.GetExtension(PathHelper.getfileName(file.fileName));
                 if (ext.Length == 0)
                 {
                     if (Directory.Exists(path))

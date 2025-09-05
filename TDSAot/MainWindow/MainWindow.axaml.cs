@@ -106,7 +106,6 @@ namespace TDSAot
             fileListBox.Focusable = true;
             // 初始化配置文件
 
-            HideWindow();
         }
 
         private IPlatformHandle GetNativeHandle()

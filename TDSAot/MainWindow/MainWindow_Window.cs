@@ -40,10 +40,10 @@ namespace TDSAot
         {
             if (!this.IsVisible)
             {
-                this.WindowState = WindowState.Normal;
                 this.IsVisible = true;
                 this.Activate();
             }
+            this.WindowState = WindowState.Normal;
             WindowUtils.ForceForegroundWindow(this.hwnd);
         }
 
