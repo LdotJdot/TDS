@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using System.Linq;
 using TDSAot.Utils;
 using TDSNET.Engine.Actions.USN;
 
@@ -12,7 +13,7 @@ namespace TDSAot
     {
         private void ShowProperty(object sender, RoutedEventArgs e)
         {
-            if (fileListBox.SelectedItem is FrnFileOrigin file)
+            foreach (var file in GetSelectedItems())
             {
                 FilePropertiesOpener.ShowFileProperties(file.FilePath);
                 UpdateRecord(file);
@@ -21,15 +22,12 @@ namespace TDSAot
 
         private void OpenFile(object sender, RoutedEventArgs e)
         {
-            if (fileListBox.SelectedItem is FrnFileOrigin file)
-            {
-                Execute(file, FileActionType.Open);
-            }
+           Execute(GetSelectedItems(), FileActionType.Open);
         }
 
         private void OpenFileWith(object sender, RoutedEventArgs e)
         {
-            if (fileListBox.SelectedItem is FrnFileOrigin file)
+            foreach (var file in GetSelectedItems())
             {
                 FilePropertiesOpener.ShowFileOpenWith(file.FilePath);
                 UpdateRecord(file);
@@ -38,37 +36,39 @@ namespace TDSAot
 
         private void OpenFolder(object sender, RoutedEventArgs e)
         {
-            if (fileListBox.SelectedItem is FrnFileOrigin file)
-            {
-                Execute(file, FileActionType.OpenFolder);
-            }
+            Execute(GetSelectedItems(), FileActionType.OpenFolder);
         }
 
         private void Delete(object sender, RoutedEventArgs e)
         {
-            if (fileListBox.SelectedItem is FrnFileOrigin file)
-            {
-                Execute(file, FileActionType.Delete);
-                RefreshFileData();
-            }
+            Execute(GetSelectedItems(), FileActionType.Delete);
+            RefreshFileData();
         }
 
         private async void Copy(object sender, RoutedEventArgs e)
         {
-            if (fileListBox.SelectedItem is FrnFileOrigin file)
+            var files = GetSelectedItems();
+            var filePathes = files.Select(o => o.FilePath).ToArray();
+            await ClipboardUtils.SetFileDropList(filePathes);
+            foreach (var file in files)
             {
-               await ClipboardUtils.SetFileDropList([file.FilePath]);
-               UpdateRecord(file);
+                UpdateRecord(file);
             }
         }
 
         private async void CopyPath(object sender, RoutedEventArgs e)
         {
-            if (fileListBox.SelectedItem is FrnFileOrigin file)
+            var files = GetSelectedItems();
+
+            if (files.Length > 0)
             {
-                await ClipboardUtils.SetText(file.FilePath);
-                UpdateRecord(file);
+                await ClipboardUtils.SetText(string.Join("\r\n",files.Select(o=>o.FilePath)));
+                foreach (var file in files)
+                {
+                    UpdateRecord(file);
+                }
             }
+
         }
 
         private void ListBoxPointerRelease(object sender, PointerReleasedEventArgs e)
@@ -81,13 +81,18 @@ namespace TDSAot
                 // 使用 GetVisualsAt 获取指定位置的所有视觉元素
                 var visualsAtPoint = listBox.GetVisualsAt(point);
 
+                var currentSelected = GetSelectedItems();
                 foreach (var visual in visualsAtPoint)
                 {
                     // 查找 ListBoxItem
                     var listBoxItem = FindVisualParent<ListBoxItem>(visual);
                     if (listBoxItem != null && listBoxItem.DataContext != null)
                     {
-                        listBox.SelectedItem = listBoxItem.DataContext;
+                        if (!currentSelected.Contains(listBoxItem.DataContext))
+                        {
+                            listBox.SelectedItem = listBoxItem.DataContext;
+                        }
+
                         break;
                     }
                 }

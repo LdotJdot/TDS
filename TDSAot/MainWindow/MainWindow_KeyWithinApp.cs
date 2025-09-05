@@ -24,19 +24,20 @@ namespace TDSAot
                 if (index <= fileListBox.ItemCount && fileListBox.Items[index - 1] is FrnFileOrigin frn)
                 {
                     fileListBox.SelectedIndex = index - 1;
-                    Execute(frn, FileActionType.Open);
+                    Execute([frn], FileActionType.Open);
                 }
             }
         }
 
         private void ESPPress()
         {
+            fileListBox.SelectedItems = null;
             inputBox.Focus();
             if (inputBox.Text?.Length > 0)
             {
                 if (inputBox.SelectedText.Length != inputBox.Text.Length)
                 {
-                    inputBox.SelectAll();
+                    inputBox.SelectAll();                    
                 }
                 else
                 {

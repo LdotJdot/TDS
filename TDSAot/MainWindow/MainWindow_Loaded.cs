@@ -30,6 +30,7 @@ namespace TDSAot
 
         private void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
+            HideWindow();
 
             Reset();
         }
@@ -72,7 +73,7 @@ namespace TDSAot
                 var st=Stopwatch.StartNew();
 #endif
 
-                MessageData.Message = ("Indexing files..(" + string.Join(",",fileSysList.Select(o=>o.driveInfo.Name))+")");
+                MessageData.Message = ("Indexing " + string.Join(",",fileSysList.Select(o=>o.driveInfo.Name)));
 
                 for (int i=0;i<fileSysList.Count;i++)
                 {
@@ -115,7 +116,7 @@ namespace TDSAot
 
                        foreach (var f in fs.files.Values)
                        {
-                           string ext = StringUtils.GetExtension(PathHelper.getfilePath(f.fileName)).ToString();
+                           string ext = StringUtils.GetExtension(PathHelper.getfileName(f.fileName)).ToString();
 
                            if (string.Equals(ext, ".LNK", StringComparison.OrdinalIgnoreCase))
                            {

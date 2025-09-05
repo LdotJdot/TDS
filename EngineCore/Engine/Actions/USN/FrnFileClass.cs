@@ -20,13 +20,15 @@ namespace TDSNET.Engine.Actions.USN
         public Bitmap? icon => FileIconService.GetIcon(FilePath);
         public string fileName = "";
         public FrnFileOrigin parentFrn = null;
-        
+
+
         public char VolumeName; //根目录名称
         public bool orderFirst = false;
 
-        public string FileName => PathHelper.getfilePath(fileName).ToString();
+        public string FileName => PathHelper.getfileName(fileName).ToString();
         public string FilePath => PathHelper.GetPath(this).ToString();
 
+        public string FileInfo=> PathHelper.getFileInfoStr(this);
 
 
 

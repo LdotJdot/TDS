@@ -148,11 +148,13 @@ namespace TDSAot
                         var comparisondType = unidwords == 0 ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
                         var comparisonType = uniwords == 0 ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
+                        bool finded = true;
+
                         foreach (var f in fs.files.Values)
                         {
                             if (runningState.Threadrest) { break; } //÷’÷π±Í«©
 
-                            bool Finded = true;
+                            finded = true;
 
                             if (DoDirectory)
                             {
@@ -162,30 +164,30 @@ namespace TDSAot
                                     {
                                         if (((unidwords | dictmp.keyindex) != dictmp.keyindex) || (dictmp.fileName.IndexOf(key, comparisondType) == -1))
                                         {
-                                            Finded = false;
+                                            finded = false;
                                             break;
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    Finded = false;
+                                    finded = false;
                                 }
                             }
 
-                            if (Finded)
+                            if (finded)
                             {
                                 foreach (string key in words)
                                 {
                                     if (((uniwords | f.keyindex) != f.keyindex) || (f.fileName.IndexOf(key, comparisonType) == -1))
                                     {
-                                        Finded = false;
+                                        finded = false;
                                         break;
                                     }
                                 }
                             }
 
-                            if (Finded)
+                            if (finded)
                             {
                                 vlist[resultNum] = f;
                                 resultNum++;

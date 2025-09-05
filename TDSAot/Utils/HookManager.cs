@@ -25,7 +25,7 @@ internal class GlobalHotkey : IDisposable
         var result = RegisterHotKey(handle, HotKeyId, (uint)keyModifiers, (uint)key);
         if (!result)
         {
-            Message.ShowWaringOk("热键注册", "热键注册失败");
+            Message.ShowWaringOk("Hotkey", "Hotkey registration failed. Check for hotkey conflicts.\r\n\r\n");
         }
     }
 
