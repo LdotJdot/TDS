@@ -18,7 +18,7 @@ namespace TDSNET.Engine.Utils
             {
                 var path = new char[1 + 1 + tailStr.Length];
 
-                path[0] = f.VolumeName;
+                path[0] = f.fileName[1];
                 path[1] = ':';
                 Array.Copy(tailStr.ToArray(), 0, path, 2, tailStr.Length);
 

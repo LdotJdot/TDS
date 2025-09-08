@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media.Imaging;
+using EngineCore.Engine.Actions.USN;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -16,14 +17,9 @@ namespace TDSNET.Engine.Actions.USN
         public ulong parentFileReferenceNumber;
 
 
-
         public Bitmap? icon => FileIconService.GetIcon(FilePath);
         public string fileName = "";
         public FrnFileOrigin parentFrn = null;
-
-
-        public char VolumeName; //根目录名称
-        public bool orderFirst = false;
 
         public string FileName => PathHelper.getfileName(fileName).ToString();
         public string FilePath => PathHelper.GetPath(this).ToString();
@@ -34,19 +30,18 @@ namespace TDSNET.Engine.Actions.USN
 
 
 
-        public static FrnFileOrigin Create(string filename, char vol, ulong fileRefNum, ulong parentFileRefNum)
+        public static FrnFileOrigin Create(string filename, ulong fileRefNum, ulong parentFileRefNum)
         {
-            FrnFileOrigin f = new FrnFileOrigin(filename, vol, fileRefNum);
+            FrnFileOrigin f = new FrnFileOrigin(filename, fileRefNum);
 
             f.parentFileReferenceNumber = parentFileRefNum;
 
             return f;
         }
 
-        private FrnFileOrigin(string filename, char vol, ulong fileRefNum)
+        private FrnFileOrigin(string filename, ulong fileRefNum)
         {
             fileName = filename;
-            VolumeName = vol;
             fileReferenceNumber = fileRefNum;
         }
 
@@ -54,14 +49,14 @@ namespace TDSNET.Engine.Actions.USN
 
     public class FileSys
     {
-        public DriveInfo driveInfo;
+        public DriveInfoData driveInfoData;
         public NtfsUsnJournal ntfsUsnJournal;
-        public Dictionary<ulong, FrnFileOrigin> files = new Dictionary<ulong, FrnFileOrigin>();
+        public Dictionary<ulong, FrnFileOrigin> files = new Dictionary<ulong, FrnFileOrigin>(100_0000);
         public Win32Api.USN_JOURNAL_DATA usnStates;
 
-        public FileSys(DriveInfo dInfo)
+        public FileSys(DriveInfoData disk)
         {
-            driveInfo = dInfo;
+            this.driveInfoData=disk;
         }
 
         public void Compress()
@@ -108,10 +103,9 @@ namespace TDSNET.Engine.Actions.USN
                         {
                             GetNACNNameAndIndex(f.Name, out var nacnName, out var index);
                             
-                            FrnFileOrigin frn = files[f.FileReferenceNumber];
-              
+                            FrnFileOrigin frn = files[f.FileReferenceNumber];              
                              frn.fileName = nacnName;
-                             frn.parentFrn = files[f.ParentFileReferenceNumber];
+                             frn.keyindex = index;
                             files[f.FileReferenceNumber] = frn;
                         }
                     }
@@ -123,7 +117,7 @@ namespace TDSNET.Engine.Actions.USN
                         {
                             GetNACNNameAndIndex(f.Name,out var name, out var index);
 
-                            FrnFileOrigin frn = FrnFileOrigin.Create(name, driveInfo.Name[0], f.FileReferenceNumber, f.ParentFileReferenceNumber);
+                            FrnFileOrigin frn = FrnFileOrigin.Create(name, f.FileReferenceNumber, f.ParentFileReferenceNumber);
                             frn.keyindex = index;
                             frn.parentFrn = files[f.ParentFileReferenceNumber];
                             files.Add(frn.fileReferenceNumber, frn);
@@ -145,7 +139,7 @@ namespace TDSNET.Engine.Actions.USN
 
         public void CreateFiles()
         {
-            ntfsUsnJournal.GetNtfsVolumeAllentries(driveInfo.Name[0], out NtfsUsnJournal.UsnJournalReturnCode rtnCode, this);
+            ntfsUsnJournal.GetNtfsVolumeAllentries(driveInfoData.Name[0], out NtfsUsnJournal.UsnJournalReturnCode rtnCode, this);
         }
 
         private const char POSITIVE = '1';

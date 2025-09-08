@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Platform;
 using Microsoft.Win32;
 using System;
+using TDS;
 using TDS.State;
 using TDSAot.Utils;
 
@@ -32,8 +33,18 @@ namespace TDSAot
             var showItem = new NativeMenuItem("Show window");
             showItem.Click += (s, e) => ShowWindow();
 
+            var option = new NativeMenuItem("Options...");
+            option.Click += (s, e) =>
+            {
+                ShowDialog_Option();
+            };
+
             var reset = new NativeMenuItem("Reindex");
-            reset.Click += (s, e) => Reset();
+            reset.Click += (s, e) =>
+            {
+                cache.Discard();
+                Reset();
+            };
 
             var about = new NativeMenuItem("About...");
             about.Click += (s, e) => Message.ShowWaringOk(AppInfomation.AboutTitle, AppInfomation.AboutInfo);
@@ -42,6 +53,7 @@ namespace TDSAot
             exitItem.Click += (s, e) => Exit();
 
             menu.Add(showItem);
+            menu.Add(option);
             menu.Add(reset);
             menu.Add(about);
             menu.Add(exitItem);

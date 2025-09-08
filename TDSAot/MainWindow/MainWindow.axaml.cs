@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
+using Avalonia.Themes.Fluent;
 using System;
 using System.Security.Principal;
 using System.Text;
@@ -14,7 +15,7 @@ namespace TDSAot
     public partial class MainWindow : Window
     {
 
-        private AppOption Option;
+        internal AppOption Option;
 
         public static void CheckRunningAsAdministrator()
         {
@@ -41,7 +42,6 @@ namespace TDSAot
             InitializeEnvironment();
             InitializeFileAction();
             InitializeEvent();
-
             // 初始化
         }
 
@@ -70,9 +70,10 @@ namespace TDSAot
             this.Activated += OnWindowActivated;
 
             this.KeyDown += OnAppKeyDown;
-
             Loaded += MainWindow_Loaded;
         }
+
+    
 
         private void InitializeEnvironment()
         {
@@ -102,7 +103,6 @@ namespace TDSAot
 
             InitializeHotKeys(hwnd);
 
-            this.ShowInTaskbar = false;
             fileListBox.Focusable = true;
             // 初始化配置文件
 
@@ -120,6 +120,7 @@ namespace TDSAot
         {
             try
             {
+                OnAppClosed(null,null);
                 ApplicationSingleton.appMutex?.ReleaseMutex();
                 ApplicationSingleton.appMutex?.Dispose();
             }

@@ -135,7 +135,7 @@ namespace TDSAot
                             bool driverFound = false;
                             foreach (string driverName in driverNames)
                             {
-                                if (string.Equals(driverName, fs.driveInfo.Name[0].ToString(), StringComparison.OrdinalIgnoreCase))
+                                if (string.Equals(driverName, fs.driveInfoData.Name[0].ToString(), StringComparison.OrdinalIgnoreCase))
                                 {
                                     driverFound = true;
                                     break;

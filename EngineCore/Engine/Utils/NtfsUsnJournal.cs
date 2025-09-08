@@ -1,4 +1,5 @@
 ﻿// NtfsUsnJournal.cs
+using EngineCore.Engine.Actions.USN;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using TDSNET.Engine.Actions.USN;
@@ -64,7 +65,7 @@ namespace TDSNET.Engine.Utils
 
         #region private member variables
 
-        private DriveInfo _driveInfo = null;
+        private DriveInfoData _driveInfo;
         private uint _volumeSerialNumber;
         private IntPtr _usnJournalRootHandle;
 
@@ -85,35 +86,13 @@ namespace TDSNET.Engine.Utils
             get { return _driveInfo.Name; }
         }
 
-        public long AvailableFreeSpace
-        {
-            get { return _driveInfo.AvailableFreeSpace; }
-        }
-
-        public long TotalFreeSpace
-        {
-            get { return _driveInfo.TotalFreeSpace; }
-        }
+        
 
         public string Format
         {
             get { return _driveInfo.DriveFormat; }
         }
-
-        public DirectoryInfo RootDirectory
-        {
-            get { return _driveInfo.RootDirectory; }
-        }
-
-        public long TotalSize
-        {
-            get { return _driveInfo.TotalSize; }
-        }
-
-        public string VolumeLabel
-        {
-            get { return _driveInfo.VolumeLabel; }
-        }
+                
 
         public uint VolumeSerialNumber
         {
@@ -137,9 +116,8 @@ namespace TDSNET.Engine.Utils
         /// valid.  If these two conditions aren't met, then the public function will return a UsnJournalReturnCode
         /// error.
         /// </remarks>
-        public NtfsUsnJournal(DriveInfo driveInfo)
+        public NtfsUsnJournal(in DriveInfoData driveInfo)
         {
-            _ = DateTime.Now;
             _driveInfo = driveInfo;
 
             if (0 == string.Compare(_driveInfo.DriveFormat, "ntfs", true))
@@ -335,7 +313,7 @@ namespace TDSNET.Engine.Utils
         {
             Dictionary<ulong, FrnFileOrigin> foldersAndFiles = filesys.files;
 
-            foldersAndFiles.Add(ROOT_FILE_REFERENCE_NUMBER, FrnFileOrigin.Create("", volname, ROOT_FILE_REFERENCE_NUMBER, ulong.MaxValue));
+            foldersAndFiles.Add(ROOT_FILE_REFERENCE_NUMBER, FrnFileOrigin.Create(volname.ToString(), ROOT_FILE_REFERENCE_NUMBER, ulong.MaxValue));
 
             usnRtnCode = UsnJournalReturnCode.VOLUME_NOT_NTFS;
             if (bNtfsVolume)
@@ -393,7 +371,7 @@ namespace TDSNET.Engine.Utils
                                     continue;
                                 }
 
-                                FrnFileOrigin f = FrnFileOrigin.Create(usnEntry.Name, volname, usnEntry.FileReferenceNumber, usnEntry.ParentFileReferenceNumber);
+                                FrnFileOrigin f = FrnFileOrigin.Create(usnEntry.Name, usnEntry.FileReferenceNumber, usnEntry.ParentFileReferenceNumber);
                           
                                 foldersAndFiles.Add(f.fileReferenceNumber, f);
 
@@ -658,7 +636,6 @@ namespace TDSNET.Engine.Utils
             out List<Win32Api.UsnEntry> usnEntries,
             out Win32Api.USN_JOURNAL_DATA newUsnState)
         {
-            _ = DateTime.Now;
             usnEntries = new List<Win32Api.UsnEntry>();
             newUsnState = new Win32Api.USN_JOURNAL_DATA();
             UsnJournalReturnCode usnRtnCode = UsnJournalReturnCode.VOLUME_NOT_NTFS;
@@ -890,7 +867,7 @@ namespace TDSNET.Engine.Utils
         /// <param name="volumeSerialNumber">out parameter to hold the volume serial number.</param>
         /// <returns></returns>
         private UsnJournalReturnCode
-            GetVolumeSerialNumber(DriveInfo driveInfo, out uint volumeSerialNumber)
+            GetVolumeSerialNumber(in DriveInfoData driveInfo, out uint volumeSerialNumber)
         {
             //Console.WriteLine("GetVolumeSerialNumber() function entered for drive '{0}'", driveInfo.Name);
 

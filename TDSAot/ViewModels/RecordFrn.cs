@@ -28,7 +28,7 @@ namespace TDSAot.ViewModels
         {
             if (file != null)
             {
-                return $"{file.fileReferenceNumber}@{file.VolumeName}@{freq}";
+                return $"{file.fileReferenceNumber}@{file.FilePath[0]}@{freq}";
             }
             else
             {

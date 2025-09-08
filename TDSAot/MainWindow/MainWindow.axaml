@@ -12,6 +12,7 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
         ExtendClientAreaTitleBarHeightHint="-1"
+		IsVisible = "False"
 		>
 		
 	
@@ -29,7 +30,7 @@
 					VerticalAlignment="Bottom"
 					Margin="5,5,5,5"
 					KeyDown="Input_KeyDown"
-					SelectionBrush="#2A8AD0"
+					SelectionBrush="#C1CDCD"
 					/>
 
 				<TextBlock FontSize="16" Text="{Binding MessageData.Message, Mode=OneWay}" VerticalAlignment="Center"

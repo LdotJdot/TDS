@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
@@ -15,7 +16,15 @@ namespace TDSAot
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow();
+                // 创建主窗口但不立即显示
+                var mainWindow = new MainWindow();
+
+                // 设置窗口初始状态为隐藏
+                mainWindow.ShowInTaskbar = false;
+                mainWindow.WindowState = WindowState.Minimized;
+
+                desktop.MainWindow = mainWindow;
+
             }
 
             base.OnFrameworkInitializationCompleted();

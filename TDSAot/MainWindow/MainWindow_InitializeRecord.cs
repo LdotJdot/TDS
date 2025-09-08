@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using System;
 using System.IO;
 using System.Linq;
+using TDSAot.State;
 using TDSAot.Utils;
 using TDSAot.ViewModels;
 using TDSNET.Engine.Actions.USN;
@@ -15,9 +16,8 @@ namespace TDSAot
 
         private void buffercoolies()
         {
-            string path = System.IO.Directory.GetCurrentDirectory() + "\\" + "Record.cah";
             //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            using (StreamWriter fs = new StreamWriter(path, false, System.Text.Encoding.GetEncoding("gb2312")))
+            using (StreamWriter fs = new StreamWriter(AppOption.CurrentRecordPath, false, System.Text.Encoding.GetEncoding("gb2312")))
             {
                 foreach (var f in recordsManager.Records)
                 {
@@ -54,13 +54,12 @@ namespace TDSAot
 
         private void ReadRecords()
         {
-            string path = System.IO.Directory.GetCurrentDirectory() + "\\" + "Record.cah";
-            if (File.Exists(path))
+            if (File.Exists(AppOption.CurrentRecordPath))
             {
                 //try
                 {
                     // Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                    using (StreamReader fs = new StreamReader(path, System.Text.Encoding.GetEncoding("gb2312")))
+                    using (StreamReader fs = new StreamReader(AppOption.CurrentRecordPath, System.Text.Encoding.GetEncoding("gb2312")))
                     {
                         recordsManager.Clear();
                         while (!fs.EndOfStream)
@@ -73,7 +72,7 @@ namespace TDSAot
                                 {
                                     foreach (var filesys in fileSysList)
                                     {
-                                        if (filesys.driveInfo.Name.TrimEnd('\\').TrimEnd(':') == KeyValue[1])
+                                        if (filesys.driveInfoData.Name.TrimEnd('\\').TrimEnd(':') == KeyValue[1])
                                         {
                                             if (filesys.files.TryGetValue(UInt64.Parse(KeyValue[0]), out FrnFileOrigin f))
                                             {

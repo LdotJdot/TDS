@@ -1,0 +1,234 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:TDS"
+        mc:Ignorable="d"
+        d:DesignWidth="420" d:DesignHeight="460"
+        x:Class="TDS.SettingWindow"
+        Title="Settings"
+        Width="420"
+        Height="460"
+        MinWidth="420"
+        MinHeight="460"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        WindowState="Normal"
+        x:DataType="vm:SettingsViewModel"
+		>
+
+	<!-- Disable window decoration buttons -->
+	<Window.ExtendClientAreaToDecorationsHint>False</Window.ExtendClientAreaToDecorationsHint>
+	<Window.SystemDecorations>Full</Window.SystemDecorations>
+
+	<Design.DataContext>
+		<vm:SettingsViewModel />
+	</Design.DataContext>
+
+	<Window.Styles>
+		<Style Selector="Window">
+			<Setter Property="FontFamily" Value="Segoe UI, Microsoft YaHei UI" />
+			<Setter Property="FontSize" Value="13" />
+		</Style>
+
+		<Style Selector="TextBlock.setting-title">
+			<Setter Property="FontSize" Value="14" />
+			<Setter Property="FontWeight" Value="Bold" />
+			<Setter Property="Margin" Value="0 0 0 6" />
+		</Style>
+
+		<Style Selector="TextBlock.setting-description">
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="Foreground" Value="#FF666666" />
+			<Setter Property="Margin" Value="0 2 0 0" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+
+		<Style Selector="StackPanel.setting-group">
+			<Setter Property="Margin" Value="0 0 0 12" />
+		</Style>
+
+		<Style Selector="NumericUpDown">
+			<Setter Property="Width" Value="120" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
+			<Setter Property="Margin" Value="0 2 0 0" />
+		</Style>
+
+		<Style Selector="ComboBox">
+			<Setter Property="Width" Value="140" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
+			<Setter Property="Margin" Value="0 2 0 0" />
+		</Style>
+
+		<Style Selector="CheckBox">
+			<Setter Property="Margin" Value="0 4 0 0" />
+		</Style>
+	</Window.Styles>
+
+
+
+	<Grid Margin="16">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+
+		<!-- Settings Content -->
+		<ScrollViewer Grid.Row="0"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+			<StackPanel Spacing="10" Width="380">
+				<!-- Search Settings -->
+				<StackPanel Classes="setting-group">
+					<TextBlock Text="Options" Classes="setting-title" />
+
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
+
+						<TextBlock Text="Default Result Count:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,0,8,0" >
+							<ToolTip.Tip>
+								<TextBlock Text="Add /a keyword during search to force list all results"/>
+							</ToolTip.Tip>
+						</TextBlock>
+						<!-- Using custom NumericTextBox instead of NumericUpDown -->
+						<TextBox x:Name="FindmaxTextBox"
+                                 Text="{Binding Findmax, Mode=TwoWay}"
+                                 Grid.Column="1" Grid.Row="0"
+                                 HorizontalAlignment="Left"
+                                 Width="120"
+                                 Margin="0 2 0 0"
+                                 Watermark="1-1000"
+                                 />
+						<TextBlock Text="Set the maximum number of result entries to display during search" Classes="setting-description"
+                                 Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" />
+					</Grid>
+				</StackPanel>
+
+				<!-- Hotkey Settings -->
+				<StackPanel Classes="setting-group">
+					<TextBlock Text="Hotkey Settings" Classes="setting-title">
+						<ToolTip.Tip>
+							<TextBlock Text="Default keys: ESC to return to input box, Space to open directory, Enter to open current item"/>
+						</ToolTip.Tip>
+					</TextBlock>
+
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
+
+						<TextBlock Text="Activation Hotkey:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,0,8,0" />
+						<ComboBox SelectedItem="{Binding HotKey}" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left">
+							<ComboBox.Items>
+								<x:String>F1</x:String>
+								<x:String>F2</x:String>
+								<x:String>F3</x:String>
+								<x:String>F4</x:String>
+								<x:String>F5</x:String>
+								<x:String>F6</x:String>
+								<x:String>F7</x:String>
+								<x:String>F8</x:String>
+								<x:String>F9</x:String>
+								<x:String>F10</x:String>
+								<x:String>F11</x:String>
+								<x:String>F12</x:String>
+								<x:String>~</x:String>
+								<x:String>Esc</x:String>
+								<x:String>Space</x:String>
+								<x:String>.</x:String>
+								<x:String>1</x:String>
+								<x:String>2</x:String>
+								<x:String>3</x:String>
+								<x:String>4</x:String>
+								<x:String>5</x:String>
+								<x:String>6</x:String>
+								<x:String>7</x:String>
+								<x:String>8</x:String>
+								<x:String>9</x:String>
+								<x:String>0</x:String>
+								<x:String>z</x:String>
+								<x:String>x</x:String>
+								<x:String>c</x:String>
+								<x:String>=</x:String>
+								<x:String>-</x:String>
+								<x:String>\</x:String>
+								<x:String>/</x:String>
+							</ComboBox.Items>
+						</ComboBox>
+
+						<TextBlock Text="Modifier Key:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1" Margin="0,6,8,0" />
+						<ComboBox  SelectedItem="{Binding ModifierKey}" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" Margin="0,6,0,0">
+							<ComboBox.Items>
+								<x:String>Ctrl</x:String>
+								<x:String>Alt</x:String>
+								<x:String>Shift</x:String>
+								<x:String>Win</x:String>
+							</ComboBox.Items>
+
+						</ComboBox>
+
+						<TextBlock Text="Set the hotkey combination to activate the application window" Classes="setting-description"
+                                 Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" />
+					</Grid>
+				</StackPanel>
+
+				<!-- Behavior Settings -->
+				<StackPanel Classes="setting-group">
+					<TextBlock Text="Behavior Settings" Classes="setting-title" />
+
+					<CheckBox Content="Hide window after startup" IsChecked="{Binding HideAfterStarted}" />
+					<TextBlock Text="Automatically hide to system tray after application starts" Classes="setting-description" />
+
+					<CheckBox Content="Enable disk cache" IsChecked="{Binding UsingCache}" Margin="0,8,0,0" />
+					<TextBlock Text="Use disk cache to speed up application loading process" Classes="setting-description" />
+				</StackPanel>
+
+				<!-- Interface Settings -->
+				<StackPanel Classes="setting-group">
+					<TextBlock Text="Interface Settings" Classes="setting-title" />
+
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
+
+						<TextBlock Text="Interface Theme:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,0,8,0" />
+						<ComboBox Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left"  SelectedItem="{Binding Theme}">
+							<ComboBox.Items>
+								<x:String>Default</x:String>
+								<x:String>Dark</x:String>
+								<x:String>Light</x:String>
+							</ComboBox.Items>
+						</ComboBox>
+						<TextBlock Text="Select the interface theme for the application" Classes="setting-description"
+                                 Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" />
+					</Grid>
+				</StackPanel>
+			</StackPanel>
+		</ScrollViewer>
+
+		<!-- Button Area -->
+		<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+			<Button Content="Cancel" Width="75" Margin="0,0,8,0" Command="{Binding CancelCommand}" />
+			<Button Content="OK" Width="75" Command="{Binding SaveCommand}" />
+		</StackPanel>
+	</Grid>
+</Window>

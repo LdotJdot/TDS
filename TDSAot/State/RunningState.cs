@@ -10,6 +10,7 @@ namespace TDSAot.State
         internal bool isAll = false;
 
         internal bool ForbidUSNupdate = false;
-        internal bool DoUSNupdate = false;
+        internal bool DoUSNupdate = true;
+
     }
 }

@@ -6,6 +6,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Splat;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,23 +34,20 @@ namespace TDSAot
 
                 runningState.Threadrest = true;
 
-                try
+                if(runningState.gOs.CurrentCount < 1)
                 {
                     runningState.gOs.Release();
                 }
-                catch
-                {
-                    Debug.WriteLine("no resource");
-                }
+                
             }
         }
 
 
-        private async void TextChanged(object? sender, RoutedEventArgs e)
+        private void TextChanged(object? sender, RoutedEventArgs e)
         {
             tmpInputStr = inputBox.Text;
 
-            await Task.Run(GoSearch);
+            Task.Run(GoSearch);
         }
 
         // 处理鼠标双击事件
@@ -85,6 +83,29 @@ namespace TDSAot
                         }
                         break;
                 }
+            }
+        }
+
+        private void OnAppClosed(object? sender, EventArgs e)
+        {
+            _trayIcon.Dispose();
+            if (Option?.UsingCache == true)
+            {
+                if (fileSysList.Count > 0 && initialFinished)
+                {
+                    try
+                    {
+                        cache.DumpToDisk(fileSysList);    // 执行缓存
+                    }
+                    catch (Exception ex)
+                    {
+                        Message.ShowWaringOk("Error",$"Caching failed:{ex.Message}");
+                    }
+                }
+            }
+            else
+            {
+                cache?.Discard();
             }
         }
 
