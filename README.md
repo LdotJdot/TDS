@@ -1,5 +1,6 @@
 # TDS - The Ultimate Windows File Finder
 
+v2025.1.0.2
 Welcome to TDS, your go-to tool for lightning-fast file searches on Windows systems.
 
 ## Overview
