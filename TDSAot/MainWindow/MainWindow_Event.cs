@@ -67,6 +67,7 @@ namespace TDSAot
                 switch (e.Key)
                 {
                     case Key.Enter:
+                        Debug.WriteLine("enter");
                         var file = Items.DisplayedData.FirstOrDefault();
                         if (file != null)
                         {

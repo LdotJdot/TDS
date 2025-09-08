@@ -29,7 +29,6 @@
 					TextChanged="TextChanged" 
 					VerticalAlignment="Bottom"
 					Margin="5,5,5,5"
-					KeyDown="Input_KeyDown"
 					SelectionBrush="#C1CDCD"
 					/>
 
