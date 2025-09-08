@@ -239,14 +239,7 @@ Restart:;
             {
                 if (Option.Findmax>0 && resultNumGlobal > Option.Findmax && runningState.isAll == false)
                 {
-                    if (Option.Findmax != 1)
-                    {
-                        MessageData.Message = $"{Option.Findmax} item";
-                    }
-                    else
-                    {
-                        MessageData.Message = $"{Option.Findmax}+ items";
-                    }
+                     MessageData.Message = $"{Option.Findmax} +item";
                 }
                 else
                 {

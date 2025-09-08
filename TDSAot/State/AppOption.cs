@@ -33,9 +33,10 @@ namespace TDSAot.State
                 {
                     configuration = new Configuration(path);
                     var findMax = configuration.GetInt(nameof(Findmax));
-                    if (findMax == null)
+                    if (findMax == null && findMax>0 && findmax<=1000)
                     {
-                        configuration.Set(nameof(Findmax), 100);
+                        findMax = 100;
+                        configuration.Set(nameof(Findmax), findMax);
                         configuration.Save();
                     }
                     else Findmax = findMax.Value;
@@ -44,7 +45,8 @@ namespace TDSAot.State
                     var hotKey = configuration.GetInt(nameof(HotKey));
                     if (hotKey == null)
                     {
-                        configuration.Set(nameof(HotKey), 192);
+                        hotKey = 192;
+                        configuration.Set(nameof(HotKey), hotKey);
                         configuration.Save();
                     }
                     else HotKey = (uint)hotKey.Value;
@@ -52,7 +54,8 @@ namespace TDSAot.State
                     var modifierKey = configuration.GetInt(nameof(ModifierKey));
                     if (modifierKey == null)
                     {
-                        configuration.Set(nameof(ModifierKey), 2);
+                        modifierKey = 2;
+                        configuration.Set(nameof(ModifierKey), modifierKey);
                         configuration.Save();
                     }
                     else ModifierKey = (uint)modifierKey.Value;
@@ -60,7 +63,8 @@ namespace TDSAot.State
                     var startHide = configuration.GetBool(nameof(HideAfterStarted));
                     if (startHide == null)
                     {
-                        configuration.Set(nameof(HideAfterStarted), false);
+                        startHide = false;
+                        configuration.Set(nameof(HideAfterStarted), startHide);
                         configuration.Save();
                     }
                     else HideAfterStarted = (bool)startHide.Value;
@@ -69,7 +73,8 @@ namespace TDSAot.State
                     var useCache = configuration.GetBool(nameof(UsingCache));
                     if (useCache == null)
                     {
-                        configuration.Set(nameof(UsingCache), true);
+                        useCache = true;
+                        configuration.Set(nameof(UsingCache), useCache);
                         configuration.Save();
                     }
                     else UsingCache = (bool)useCache.Value;
@@ -77,7 +82,8 @@ namespace TDSAot.State
                     var theme = configuration.GetInt(nameof(Theme));
                     if (theme == null)
                     {
-                        configuration.Set(nameof(Theme), true);
+                        theme = (int)ThemeType.Default;
+                        configuration.Set(nameof(Theme), theme);
                         configuration.Save();
                     }
                     else Theme = (ThemeType)theme.Value;
