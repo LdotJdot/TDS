@@ -24,6 +24,7 @@ namespace TDSAot
         string? tmpInputStr;
         private void GoSearch()
         {
+
             if (string.IsNullOrWhiteSpace(tmpInputStr))
             {
                 ChangeToRecord();
@@ -31,8 +32,6 @@ namespace TDSAot
             else
             {
                 keyword = tmpInputStr;
-
-                runningState.Threadrest = true;
 
                 if(runningState.gOs.CurrentCount < 1)
                 {
@@ -46,7 +45,7 @@ namespace TDSAot
         private void TextChanged(object? sender, RoutedEventArgs e)
         {
             tmpInputStr = inputBox.Text;
-
+            runningState.Threadrest = true;
             Task.Run(GoSearch);
         }
 
@@ -89,7 +88,7 @@ namespace TDSAot
 
         private void OnAppClosed(object? sender, EventArgs e)
         {
-            _trayIcon.Dispose();
+            _trayIcon?.Dispose();
             if (Option?.UsingCache == true)
             {
                 if (fileSysList.Count > 0 && initialFinished)

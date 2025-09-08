@@ -41,7 +41,9 @@ namespace TDSAot
             Option = new AppOption();
 
             if (!Option.HideAfterStarted) ShowWindow();
-
+#if DEBUG
+            return;
+#endif
             RegisterHotKeys();
             state?.Dispose();
             state = new ActionState();
