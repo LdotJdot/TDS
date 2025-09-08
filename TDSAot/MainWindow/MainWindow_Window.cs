@@ -42,9 +42,9 @@ namespace TDSAot
             {
                 this.IsVisible = true;
                 this.Activate();
-                lastFocused = fileListBox;
-                fileListBox.Focus();
-                fileListBox.SelectAll();
+                lastFocused = inputBox;
+                inputBox.Focus();
+                inputBox.SelectAll();
             }
             this.WindowState = WindowState.Normal;
             WindowUtils.ForceForegroundWindow(this.hwnd);
