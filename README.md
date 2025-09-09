@@ -37,7 +37,7 @@ TDS is open-sourced! We welcome any contributions, suggestions, and feedback to 
 
 ## License
 
-TDS is currently totally free trial. For more information on licensing, please contact us directly.
+TDS is currently totally free with MIT license.
 
 ## Contact
 
