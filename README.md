@@ -1,6 +1,6 @@
 # TDS - The Ultimate Windows File Finder
 
-[2025.1.1.2] Welcome to TDS, your go-to tool for lightning-fast file searches on Windows systems.
+[2025.1.1.3] Welcome to TDS, your go-to tool for lightning-fast file searches on Windows systems.
 
 ## Overview
 
@@ -33,7 +33,7 @@ TDS is a powerful, efficient, and user-friendly application designed to help you
 
 ## Contributing
 
-TDS is set to be open-sourced soon! We welcome any contributions, suggestions, and feedback to help improve the application. Stay tuned for the open-source release and feel free to fork the repository and submit pull requests.
+TDS is open-sourced! We welcome any contributions, suggestions, and feedback to help improve the application. Stay tuned for the open-source release and feel free to fork the repository and submit pull requests.
 
 ## License
 
