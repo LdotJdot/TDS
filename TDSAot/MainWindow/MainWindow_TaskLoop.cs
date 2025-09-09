@@ -6,6 +6,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using TDSAot.State;
 using TDSNET.Engine.Actions.USN;
 using TDSNET.Engine.Utils;
@@ -119,15 +120,15 @@ namespace TDSAot
                     runningState.DoUSNupdate = false;
 
 
-                    for (int d = 0; d < fileSysList.Count; d++)
+                    Parallel.For(0, fileSysList.Count, d =>
                     {
-                        if (runningState.Threadrest) { goto Restart; } //ÖÕÖ¹±êÇ©
+                        if (runningState.Threadrest) { return; } //ÖÕÖ¹±êÇ©
                         var fs = fileSysList[d];
 
 
                         var l = fs.files;
 
-                        if (l.Count == 0) continue;
+                        if (l.Count == 0) return;
 
 
                         if (driverNames != null)
@@ -142,7 +143,7 @@ namespace TDSAot
                                 }
                             }
 
-                            if (!driverFound) continue;
+                            if (!driverFound) return;
                         }
 
                         var comparisondType = unidwords == 0 ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
@@ -189,8 +190,7 @@ namespace TDSAot
 
                             if (finded)
                             {
-                                vlist[resultNum] = f;
-                                resultNum++;
+                                vlist[Interlocked.Increment(ref resultNum) - 1] = f;
 
                                 if (resultNum == vlist.Length || (Option.Findmax > 0 && resultNum > Option.Findmax && runningState.isAll == false))
                                 {
@@ -204,7 +204,7 @@ namespace TDSAot
                                 }
                             }
                         }
-                    }
+                    });
                 }
                 catch (Exception ex)
                 {
