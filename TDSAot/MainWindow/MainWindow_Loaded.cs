@@ -42,7 +42,7 @@ namespace TDSAot
 
             if (!Option.HideAfterStarted) ShowWindow();
 #if DEBUG
-            return;
+           // return;
 #endif
             RegisterHotKeys();
             state?.Dispose();
