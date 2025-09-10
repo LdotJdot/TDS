@@ -207,10 +207,6 @@ namespace TDSNET.Engine.Actions.USN
                 {
                     SetBit(ref indexValue, i);
                 }
-                else
-                {
-                    ClearBit(ref indexValue, i);
-                }
             }
             return indexValue;
         }
@@ -219,9 +215,6 @@ namespace TDSNET.Engine.Actions.USN
         {
             value = value | ((ulong)1 << position);
         }
-        static void ClearBit(ref ulong value, int position)
-        {
-            value = value & ~((ulong)1 << position);
-        }
+
     }
 }

@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Remote.Protocol.Input;
 using Avalonia.Threading;
 using System;
 using System.Collections;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 using TDSAot.State;
 using TDSNET.Engine.Actions.USN;
 using TDSNET.Engine.Utils;
+using Tmds.DBus.Protocol;
 
 namespace TDSAot
 {
@@ -161,9 +163,15 @@ namespace TDSAot
                             {
                                 if (f.parentFrn != null && l.TryGetValue(f.parentFrn.fileReferenceNumber, out FrnFileOrigin? dictmp))
                                 {
+                                    if((unidwords | dictmp.keyindex) != dictmp.keyindex)
+                                    {
+                                        finded = false;
+                                        continue;
+                                    }
+
                                     foreach (string key in dwords)
                                     {
-                                        if (((unidwords | dictmp.keyindex) != dictmp.keyindex) || (dictmp.fileName.IndexOf(key, comparisondType) == -1))
+                                        if (dictmp.fileName.IndexOf(key, comparisondType) == -1)
                                         {
                                             finded = false;
                                             break;
@@ -178,12 +186,48 @@ namespace TDSAot
 
                             if (finded)
                             {
-                                foreach (string key in words)
+                                if ((uniwords | f.keyindex) != f.keyindex)
                                 {
-                                    if (((uniwords | f.keyindex) != f.keyindex) || (f.fileName.IndexOf(key, comparisonType) == -1))
+                                    finded = false;
+                                    continue;
+                                }
+
+                                if (words.Length == 1)
+                                {
+                                    if (f.fileName.IndexOf(words[0], comparisonType) == -1)
                                     {
                                         finded = false;
-                                        break;
+                                        continue;
+                                    }
+                                }
+                                else if (words.Length == 2)
+                                {
+                                    if (f.fileName.IndexOf(words[0], comparisonType) == -1 ||
+                                        f.fileName.IndexOf(words[1], comparisonType) == -1)
+                                    {
+                                        finded = false;
+                                        continue;
+                                    }
+                                }
+                                else if (words.Length == 3)
+                                {
+                                    if (f.fileName.IndexOf(words[0], comparisonType) == -1 ||
+                                        f.fileName.IndexOf(words[1], comparisonType) == -1 ||
+                                        f.fileName.IndexOf(words[2], comparisonType) == -1)
+                                    {
+                                        finded = false;
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (string key in words)
+                                    {
+                                        if (f.fileName.IndexOf(key, comparisonType) == -1)
+                                        {
+                                            finded = false;
+                                            break;
+                                        }
                                     }
                                 }
                             }
