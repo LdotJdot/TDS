@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using TDSAot.State;
 using TDSNET.Engine.Actions.USN;
 using TDSNET.Engine.Utils;
+using Tmds.DBus.Protocol;
 
 namespace TDSAot
 {
@@ -184,9 +185,15 @@ namespace TDSAot
 
                             if (finded)
                             {
+                                if ((uniwords | f.keyindex) != f.keyindex)
+                                {
+                                    finded = false;
+                                    break;
+                                }
+
                                 foreach (string key in words)
                                 {
-                                    if (((uniwords | f.keyindex) != f.keyindex) || (f.fileName.IndexOf(key, comparisonType) == -1))
+                                    if (f.fileName.IndexOf(key, comparisonType) == -1)
                                     {
                                         finded = false;
                                         break;
