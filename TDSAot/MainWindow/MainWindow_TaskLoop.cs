@@ -166,7 +166,7 @@ namespace TDSAot
                                     if((unidwords | dictmp.keyindex) != dictmp.keyindex)
                                     {
                                         finded = false;
-                                        break;
+                                        continue;
                                     }
 
                                     foreach (string key in dwords)
@@ -189,7 +189,7 @@ namespace TDSAot
                                 if ((uniwords | f.keyindex) != f.keyindex)
                                 {
                                     finded = false;
-                                    break;
+                                    continue;
                                 }
 
                                 if (words.Length == 1)
@@ -197,7 +197,7 @@ namespace TDSAot
                                     if (f.fileName.IndexOf(words[0], comparisonType) == -1)
                                     {
                                         finded = false;
-                                        break;
+                                        continue;
                                     }
                                 }
                                 else if (words.Length == 2)
@@ -206,7 +206,7 @@ namespace TDSAot
                                         f.fileName.IndexOf(words[1], comparisonType) == -1)
                                     {
                                         finded = false;
-                                        break;
+                                        continue;
                                     }
                                 }
                                 else if (words.Length == 3)
@@ -216,7 +216,7 @@ namespace TDSAot
                                         f.fileName.IndexOf(words[2], comparisonType) == -1)
                                     {
                                         finded = false;
-                                        break;
+                                        continue;
                                     }
                                 }
                                 else
