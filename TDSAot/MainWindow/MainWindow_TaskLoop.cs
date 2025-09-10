@@ -161,9 +161,15 @@ namespace TDSAot
                             {
                                 if (f.parentFrn != null && l.TryGetValue(f.parentFrn.fileReferenceNumber, out FrnFileOrigin? dictmp))
                                 {
+                                    if((unidwords | dictmp.keyindex) != dictmp.keyindex)
+                                    {
+                                        finded = false;
+                                        break;
+                                    }
+
                                     foreach (string key in dwords)
                                     {
-                                        if (((unidwords | dictmp.keyindex) != dictmp.keyindex) || (dictmp.fileName.IndexOf(key, comparisondType) == -1))
+                                        if (dictmp.fileName.IndexOf(key, comparisondType) == -1)
                                         {
                                             finded = false;
                                             break;
