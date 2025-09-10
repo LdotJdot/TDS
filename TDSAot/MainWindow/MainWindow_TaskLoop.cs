@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Remote.Protocol.Input;
 using Avalonia.Threading;
 using System;
 using System.Collections;
@@ -191,12 +192,42 @@ namespace TDSAot
                                     break;
                                 }
 
-                                foreach (string key in words)
+                                if (words.Length == 1)
                                 {
-                                    if (f.fileName.IndexOf(key, comparisonType) == -1)
+                                    if (f.fileName.IndexOf(words[0], comparisonType) == -1)
                                     {
                                         finded = false;
                                         break;
+                                    }
+                                }
+                                else if (words.Length == 2)
+                                {
+                                    if (f.fileName.IndexOf(words[0], comparisonType) == -1 ||
+                                        f.fileName.IndexOf(words[1], comparisonType) == -1)
+                                    {
+                                        finded = false;
+                                        break;
+                                    }
+                                }
+                                else if (words.Length == 3)
+                                {
+                                    if (f.fileName.IndexOf(words[0], comparisonType) == -1 ||
+                                        f.fileName.IndexOf(words[1], comparisonType) == -1 ||
+                                        f.fileName.IndexOf(words[2], comparisonType) == -1)
+                                    {
+                                        finded = false;
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (string key in words)
+                                    {
+                                        if (f.fileName.IndexOf(key, comparisonType) == -1)
+                                        {
+                                            finded = false;
+                                            break;
+                                        }
                                     }
                                 }
                             }
