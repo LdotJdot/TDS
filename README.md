@@ -2,6 +2,8 @@
 
 [2025.1.1.4] Welcome to TDS, your go-to tool for lightning-fast file searches on Windows systems.
 
+![image](./ui.png)
+
 ## Overview
 
 TDS is a powerful, efficient, and user-friendly application designed to help you quickly locate and manage files on your Windows system. It is developed using the latest C# 9 and Avalonia UI technologies and compiled under AOT (Ahead-Of-Time) for optimal performance.
