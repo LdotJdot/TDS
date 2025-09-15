@@ -20,7 +20,7 @@ namespace TDSAot
             Items.Bind(data);
             Items.SetDisplayCount(count);
 
-            if (Option?.AutoAdjust == true)
+            if (Option?.AutoAdjust == true && updateWindow)
             {
                 Dispatcher.UIThread.InvokeAsync(()=>AdjustWindowForSize(count));
             }

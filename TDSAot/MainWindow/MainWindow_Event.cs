@@ -21,7 +21,8 @@ namespace TDSAot
 {
     public partial class MainWindow : Window
     {
-        string? tmpInputStr;
+        string lastBuffered = string.Empty;
+        string tmpInputStr = string.Empty;
         private void GoSearch()
         {
 
@@ -29,22 +30,23 @@ namespace TDSAot
             {
                 ChangeToRecord();
             }
-            else
+            else if(tmpInputStr.Equals(lastBuffered, StringComparison.OrdinalIgnoreCase))
             {
                 keyword = tmpInputStr;
 
                 if(runningState.gOs.CurrentCount < 1)
                 {
                     runningState.gOs.Release();
-                }
-                
+                }                
             }
+            lastBuffered = tmpInputStr;
+
         }
 
 
         private void TextChanged(object? sender, RoutedEventArgs e)
         {
-            tmpInputStr = inputBox.Text;
+            tmpInputStr = inputBox.Text?.Trim() ?? string.Empty;
             runningState.Threadrest = true;
             Task.Run(GoSearch);
         }
