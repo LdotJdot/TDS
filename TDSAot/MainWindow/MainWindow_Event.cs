@@ -21,32 +21,31 @@ namespace TDSAot
 {
     public partial class MainWindow : Window
     {
-        string lastBuffered = string.Empty;
-        string tmpInputStr = string.Empty;
+        string bufferedText_prev = string.Empty;
+        string bufferedText = string.Empty;
         private void GoSearch()
         {
-
-            if (string.IsNullOrWhiteSpace(tmpInputStr))
+            if (string.IsNullOrWhiteSpace(bufferedText))
             {
                 ChangeToRecord();
             }
-            else if(tmpInputStr.Equals(lastBuffered, StringComparison.OrdinalIgnoreCase))
+            else if(!bufferedText.Equals(bufferedText_prev, StringComparison.OrdinalIgnoreCase))
             {
-                keyword = tmpInputStr;
+                keyword = bufferedText;
 
                 if(runningState.gOs.CurrentCount < 1)
                 {
                     runningState.gOs.Release();
                 }                
             }
-            lastBuffered = tmpInputStr;
+            bufferedText_prev = bufferedText;
 
         }
 
 
         private void TextChanged(object? sender, RoutedEventArgs e)
         {
-            tmpInputStr = inputBox.Text?.Trim() ?? string.Empty;
+            bufferedText = inputBox.Text?.Trim() ?? string.Empty;
             runningState.Threadrest = true;
             Task.Run(GoSearch);
         }
