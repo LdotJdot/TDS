@@ -53,7 +53,10 @@ namespace TDSAot
         private void OnWindowDeactivated(object? sender, EventArgs e)
         {
             lastFocused = FocusManager?.GetFocusedElement();
-            HideWindow();
+            if (Option.AutoHide)
+            {
+                HideWindow();
+            }
         }
 
         private void OnWindowActivated(object? sender, EventArgs e)
@@ -63,6 +66,28 @@ namespace TDSAot
                 StaticState.CanBeHide = true;
                 RefreshFileData();
             }
+        }
+
+        private void AdjustWindowForSize(int count)
+        {
+            this.Height = Math.Min(
+                        inputBox.Margin.Top +      //top margin
+                        inputBox.Height +           //textHeight
+                        inputBox.Margin.Bottom +      //bottom margin
+                        59 * count    // listItem desiredSize
+                    , DefaultHeight);
+        }
+        private void AdjustWindowForTitleOnly()
+        {
+            this.Height =
+                        inputBox.Margin.Top +      //top margin
+                        inputBox.Height +           //textHeight
+                        inputBox.Margin.Bottom;      //bottom margin
+        }
+        private void AdjustToDefault()
+        {
+            this.Height = DefaultHeight;
+
         }
     }
 }

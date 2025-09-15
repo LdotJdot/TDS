@@ -189,9 +189,18 @@
 				<StackPanel Classes="setting-group">
 					<TextBlock Text="Behavior Settings" Classes="setting-title" />
 
-					<CheckBox Content="Hide window after startup" IsChecked="{Binding HideAfterStarted}" />
-					<TextBlock Text="Automatically hide to system tray after application starts" Classes="setting-description" />
+					<CheckBox Content="Hide on startup" IsChecked="{Binding HideAfterStarted}" />
+					<TextBlock Text="Automatically hide to the system tray when the app starts" Classes="setting-description" />
 
+					<CheckBox Content="Always on top" IsChecked="{Binding AlwaysTop}" Margin="0,8,0,0" />
+					<TextBlock Text="Keep the window always on top of others" Classes="setting-description" />
+
+					<CheckBox Content="Hide on focus loss" IsChecked="{Binding AutoHide}" Margin="0,8,0,0" />
+					<TextBlock Text="Automatically hide the window when it loses focus" Classes="setting-description" />
+
+					<CheckBox Content="Auto-resize" IsChecked="{Binding AutoAdjust}" Margin="0,8,0,0" />
+					<TextBlock Text="Auto-adjust the window size based on the number of results" Classes="setting-description" />
+					
 					<CheckBox Content="Enable disk cache" IsChecked="{Binding UsingCache}" Margin="0,8,0,0" />
 					<TextBlock Text="Use disk cache to speed up application loading process" Classes="setting-description" />
 				</StackPanel>

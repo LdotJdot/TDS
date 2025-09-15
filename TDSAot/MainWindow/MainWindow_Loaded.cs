@@ -41,13 +41,21 @@ namespace TDSAot
             Option = new AppOption();
 
             if (!Option.HideAfterStarted) ShowWindow();
+            this.Topmost = Option.AlwaysTop;
 #if DEBUG
            // return;
 #endif
             RegisterHotKeys();
             state?.Dispose();
             state = new ActionState();
-            Task.Run(ListFilesThreadStart);
+           
+            Task.Run(ListFilesThreadStart).ContinueWith((task)=>
+            {
+                if (Option.AutoAdjust == false)
+                {
+                    Dispatcher.UIThread.InvokeAsync(AdjustToDefault); // when not adjust to default;
+                }
+            });
         }
 
         DiskDataCache cache = new DiskDataCache(AppOption.CurrentCachePath);
@@ -98,6 +106,7 @@ namespace TDSAot
 
             EnableController();
             ChangeToRecord();
+            
 #if DEBUG
             Debug.WriteLine(st.Elapsed.ToString());
 #endif

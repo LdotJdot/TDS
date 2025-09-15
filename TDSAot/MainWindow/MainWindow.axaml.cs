@@ -36,8 +36,8 @@ namespace TDSAot
                 Exit();
             }
             CheckRunningAsAdministrator();
-            SetWindowSizeByScreenRatio(0.4, 0.4);
             InitializeComponent();
+            SetWindowSizeByScreenRatio(0.4, 0.5);
             InitializeTrayIcon();
             InitializeEnvironment();
             InitializeFileAction();
@@ -45,22 +45,25 @@ namespace TDSAot
             // 初始化
         }
 
+        double DefaultHeight;
         private void SetWindowSizeByScreenRatio(double widthRatio, double heightRatio)
         {
+
             var screen = Screens.Primary;
             if (screen != null)
             {
                 var workingArea = screen.WorkingArea;
                 Width = workingArea.Width * widthRatio;
-                Height = workingArea.Height * heightRatio;
+                DefaultHeight = workingArea.Height * heightRatio;
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
             }
             else
             {
                 // 备用方案
                 Width = 1024 * widthRatio;
-                Height = 768 * heightRatio;
+                DefaultHeight = 768 * heightRatio;
             }
+            AdjustWindowForTitleOnly();
         }
 
         private void InitializeEvent()
