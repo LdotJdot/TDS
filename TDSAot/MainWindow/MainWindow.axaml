@@ -16,11 +16,11 @@
 		>
 		
 	
-	<DockPanel LastChildFill="True">
+	<DockPanel  LastChildFill="True">
 
 		<!-- 顶部区域 -->
 		<StackPanel DockPanel.Dock="Top">
-			<Grid Margin="0,0,0,5">
+			<Grid >
 				<TextBox 
 					FontSize="18" 
 					x:Name="inputBox" 
@@ -72,7 +72,7 @@
 
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Grid  ColumnDefinitions="Auto,*" >								
+							<Grid  ColumnDefinitions="Auto,*">								
 								<Image Width="32" Height="32" 
 									    Source="{Binding icon, Mode=OneWay}"
 									   Stretch="Uniform"/>

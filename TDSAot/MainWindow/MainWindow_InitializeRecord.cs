@@ -40,8 +40,8 @@ namespace TDSAot
 
         private void ChangeToRecord()
         {
-            this.Items.Bind(recordsManager.Records.Select(o => o.file).ToList());
-            this.Items.DisplayCount=recordsManager.Records.Count();
+            UpdateData(recordsManager.Records.Select(o => o.file).ToList(),recordsManager.Records.Count());
+
             if (recordsManager.Records.Count <= 1)
             {
                 MessageData.Message = $"{this.Items.DisplayCount} item";

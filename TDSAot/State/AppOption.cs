@@ -18,6 +18,10 @@ namespace TDSAot.State
         private uint modifierKey = 2;
         private bool hideAfterStarted = false;
         private bool usingCache = true;
+        private bool autoHide = true;
+        private bool alwaysTop = true;
+        private bool autoAdjust = true;
+
         private ThemeType theme;
 
         public AppOption()
@@ -79,6 +83,34 @@ namespace TDSAot.State
                     }
                     else UsingCache = (bool)useCache.Value;
 
+                    var autohide = configuration.GetBool(nameof(AutoHide));
+                    if (autohide == null)
+                    {
+                        autohide = true;
+                        configuration.Set(nameof(AutoHide), autohide);
+                        configuration.Save();
+                    }
+                    else AutoHide = (bool)autohide.Value;
+                    
+                    var alwaystop = configuration.GetBool(nameof(AlwaysTop));
+                    if (alwaystop == null)
+                    {
+                        alwaystop = true;
+                        configuration.Set(nameof(AlwaysTop), alwaystop);
+                        configuration.Save();
+                    }
+                    else AlwaysTop = (bool)alwaystop.Value;
+                    
+                    var autoadjust = configuration.GetBool(nameof(AutoAdjust));
+                    if (autoadjust == null)
+                    {
+                        autoadjust = true;
+                        configuration.Set(nameof(AutoAdjust), autoadjust);
+                        configuration.Save();
+                    }
+                    else AutoAdjust = (bool)autoadjust.Value;
+
+
                     var theme = configuration.GetInt(nameof(Theme));
                     if (theme == null)
                     {
@@ -112,6 +144,9 @@ namespace TDSAot.State
             ModifierKey = 2;
             HideAfterStarted = false;
             UsingCache = true;
+            AutoHide = true;
+            AlwaysTop = true;
+            AutoAdjust = true;
             Theme = ThemeType.Default;
             configuration.Save(CurrentOptionPath);
         }
@@ -144,5 +179,10 @@ namespace TDSAot.State
                 _ => ThemeVariant.Default,
             };
         }
+        internal bool AutoHide { get => autoHide; set { autoHide = value; configuration?.Set(nameof(AutoHide), autoHide); } }
+        internal bool AlwaysTop { get => alwaysTop; set { alwaysTop = value; configuration?.Set(nameof(AlwaysTop), alwaysTop); } }
+        internal bool AutoAdjust { get => autoAdjust; set { autoAdjust = value; configuration?.Set(nameof(AutoAdjust), autoAdjust); } }
+
+
     }
 }

@@ -33,13 +33,16 @@ public partial class SettingWindow : Window
 
     internal SettingsViewModel LoadOption()
     {
-        var svm = new SettingsViewModel(this);
-        svm.Findmax = mainWindow.Option.Findmax.ToString();
-        svm.HotKey = KeyTransfer.ReverseTransKey(mainWindow.Option.HotKey);
-        svm.ModifierKey = KeyTransfer.ReverseTransKey(mainWindow.Option.ModifierKey);
-        svm.UsingCache = mainWindow.Option.UsingCache;
+        var svm              = new SettingsViewModel(this);
+        svm.Findmax          = mainWindow.Option.Findmax.ToString();
+        svm.HotKey           = KeyTransfer.ReverseTransKey(mainWindow.Option.HotKey);
+        svm.ModifierKey      = KeyTransfer.ReverseTransKey(mainWindow.Option.ModifierKey);
+        svm.UsingCache       = mainWindow.Option.UsingCache;
         svm.HideAfterStarted = mainWindow.Option.HideAfterStarted;
-        svm.Theme = mainWindow.Option.Theme.ToString();
+        svm.Theme            = mainWindow.Option.Theme.ToString();
+        svm.AutoHide         = mainWindow.Option.AutoHide;
+        svm.AutoAdjust       = mainWindow.Option.AutoAdjust;
+        svm.AlwaysTop        = mainWindow.Option.AlwaysTop;
         return svm;
     }
 
@@ -54,15 +57,19 @@ public partial class SettingWindow : Window
         {
             mainWindow.Option.Findmax = 100;
         }
-        mainWindow.Option.HotKey = KeyTransfer.TransKey(svm.HotKey);
-        mainWindow.Option.ModifierKey = KeyTransfer.TransKey(svm.ModifierKey);
-        mainWindow.Option.UsingCache = svm.UsingCache;
+        mainWindow.Option.HotKey           = KeyTransfer.TransKey(svm.HotKey);
+        mainWindow.Option.ModifierKey      = KeyTransfer.TransKey(svm.ModifierKey);
+        mainWindow.Option.UsingCache       = svm.UsingCache;
         mainWindow.Option.HideAfterStarted = svm.HideAfterStarted;
+        mainWindow.Option.AutoHide         = svm.AutoHide;
+        mainWindow.Option.AutoAdjust       = svm.AutoAdjust;
+        mainWindow.Option.AlwaysTop        = svm.AlwaysTop;
                
-        mainWindow.Option.Theme = Enum.TryParse<ThemeType>(svm.Theme, true, out var theme)?theme: ThemeType.Default;
+        mainWindow.Option.Theme            = Enum.TryParse<ThemeType>(svm.Theme, true, out var theme)?theme: ThemeType.Default;
 
         mainWindow.Option.Save();
         mainWindow.RegisterHotKeys();
+        mainWindow.Topmost = mainWindow.Option.AlwaysTop;
         this.Exit();
     }
     internal void Exit()

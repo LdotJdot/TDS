@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TDSAot.State;
@@ -273,8 +274,8 @@ Restart:;
 
         private void UpdateList(bool finished = true)
         {
-            Items.Bind(vlist);
-            Items.SetDisplayCount(resultNumGlobal);
+            UpdateData(vlist, resultNumGlobal, finished);
+
             if (finished == false)
             {
                 MessageData.Message = $"...";

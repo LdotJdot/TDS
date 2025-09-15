@@ -69,6 +69,39 @@ namespace TDS
             }
         }
 
+        bool autoHide = true;
+        public bool AutoHide
+        {
+            get => autoHide;
+            set
+            {
+                autoHide = value;
+                this.RaiseAndSetIfChanged(ref autoHide, value);
+            }
+        }
+
+        bool alwaysTop = true;
+        public bool AlwaysTop
+        {
+            get => alwaysTop;
+            set
+            {
+                alwaysTop = value;
+                this.RaiseAndSetIfChanged(ref alwaysTop, value);
+            }
+        }
+
+        bool autoAdjust = true;
+        public bool AutoAdjust
+        {
+            get => autoAdjust;
+            set
+            {
+                autoAdjust = value;
+                this.RaiseAndSetIfChanged(ref autoAdjust, value);
+            }
+        }
+
         string theme="Default";
         public string Theme
         {

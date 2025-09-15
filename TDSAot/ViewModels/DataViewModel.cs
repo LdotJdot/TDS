@@ -21,7 +21,7 @@ namespace TDSAot.ViewModels
         public int DisplayCount
         {
             get => _displayCount;
-            set
+            private set
             {
                 _displayCount = value;
                 UpdateDisplayedData();
