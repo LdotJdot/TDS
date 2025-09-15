@@ -11,7 +11,7 @@
 	  <PackageIcon>tds32-32.ico</PackageIcon>
 	  <Platforms>AnyCPU;x64;x86</Platforms>
 	  <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-
+	  <OptimizationPreference>Speed</OptimizationPreference>
 	  <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 	  <PublishAot>true</PublishAot>
 	  <TrimMode>full</TrimMode>

@@ -1,8 +1,12 @@
 # TDS - The Ultimate Windows File Finder
 
-[2025.1.1.4] Welcome to TDS, your go-to tool for lightning-fast file searches on Windows systems.
+[2025.1.1.5] Welcome to TDS, your go-to tool for lightning-fast file searches on Windows systems.
 
-![image](./ui.png)
+![image](./ui.png)  
+
+Sample: List all the files with the name contains "log" and ended with ".json" in the folder "App" from disks "c:" and "d:"  
+You can type: c,d: App\ log .json| /a  
+![image](./results.png)
 
 ## Overview
 
