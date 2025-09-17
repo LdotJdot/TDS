@@ -11,14 +11,14 @@ namespace TDSNET.Engine.Utils
         {
             if (f.parentFrn != null)
             {
-                tailStr = string.Concat("\\", PathHelper.getfileName(f.fileName), tailStr).AsSpan();
+                tailStr = string.Concat("\\", PathHelper.getfileName(f.innerFileName), tailStr).AsSpan();
                 return GetPathStr(f.parentFrn, tailStr);
             }
             else
             {
                 var path = new char[1 + 1 + tailStr.Length];
 
-                path[0] = f.fileName[1];
+                path[0] = f.innerFileName[1];
                 path[1] = ':';
                 Array.Copy(tailStr.ToArray(), 0, path, 2, tailStr.Length);
 

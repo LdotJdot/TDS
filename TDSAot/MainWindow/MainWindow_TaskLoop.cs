@@ -22,6 +22,7 @@ namespace TDSAot
         readonly private RunningState runningState=new RunningState();
 
         int resultNumGlobal= 0;
+        static internal string[] words;
 
         private async void SearchFilesThreadLoop(CancellationToken cancellationToken)
         {
@@ -30,7 +31,6 @@ namespace TDSAot
             while (runningState.Threadrunning == true && !cancellationToken.IsCancellationRequested)
             {
                 string[] dwords = null;
-                string[] words;
                 int resultNum = 0;
                 UInt64 unidwords = 0;
                 UInt64 uniwords;
@@ -38,13 +38,14 @@ namespace TDSAot
                 
                 try
                 {
-                    await runningState.gOs.WaitAsync(cancellationToken);
+                    await runningState.gOs.WaitAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch
                 {
                     break;
                 }
 
+                words=[];
 
                 runningState.Threadrest = false;  //÷ÿ∆Ù±Í«©
 
@@ -172,7 +173,7 @@ namespace TDSAot
 
                                     foreach (string key in dwords)
                                     {
-                                        if (dictmp.fileName.IndexOf(key, comparisondType) == -1)
+                                        if (dictmp.innerFileName.IndexOf(key, comparisondType) == -1)
                                         {
                                             finded = false;
                                             break;
@@ -195,7 +196,7 @@ namespace TDSAot
 
                                 if (words.Length == 1)
                                 {
-                                    if (f.fileName.IndexOf(words[0], comparisonType) == -1)
+                                    if (f.innerFileName.IndexOf(words[0], comparisonType) == -1)
                                     {
                                         finded = false;
                                         continue;
@@ -203,8 +204,8 @@ namespace TDSAot
                                 }
                                 else if (words.Length == 2)
                                 {
-                                    if (f.fileName.IndexOf(words[0], comparisonType) == -1 ||
-                                        f.fileName.IndexOf(words[1], comparisonType) == -1)
+                                    if (f.innerFileName.IndexOf(words[0], comparisonType) == -1 ||
+                                        f.innerFileName.IndexOf(words[1], comparisonType) == -1)
                                     {
                                         finded = false;
                                         continue;
@@ -212,9 +213,9 @@ namespace TDSAot
                                 }
                                 else if (words.Length == 3)
                                 {
-                                    if (f.fileName.IndexOf(words[0], comparisonType) == -1 ||
-                                        f.fileName.IndexOf(words[1], comparisonType) == -1 ||
-                                        f.fileName.IndexOf(words[2], comparisonType) == -1)
+                                    if (f.innerFileName.IndexOf(words[0], comparisonType) == -1 ||
+                                        f.innerFileName.IndexOf(words[1], comparisonType) == -1 ||
+                                        f.innerFileName.IndexOf(words[2], comparisonType) == -1)
                                     {
                                         finded = false;
                                         continue;
@@ -224,10 +225,10 @@ namespace TDSAot
                                 {
                                     foreach (string key in words)
                                     {
-                                        if (f.fileName.IndexOf(key, comparisonType) == -1)
+                                        if (f.innerFileName.IndexOf(key, comparisonType) == -1)
                                         {
                                             finded = false;
-                                            break;
+                                            continue;
                                         }
                                     }
                                 }
@@ -274,7 +275,7 @@ Restart:;
 
         private void UpdateList(bool finished = true)
         {
-            UpdateData(vlist, resultNumGlobal, finished);
+            UpdateData(vlist, resultNumGlobal);
 
             if (finished == false)
             {

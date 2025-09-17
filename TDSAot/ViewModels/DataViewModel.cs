@@ -38,7 +38,7 @@ namespace TDSAot.ViewModels
             {
                 // 生成测试数据（实际中可能从文件或数据库加载）
                 this._allData = _allData;
-                UpdateDisplayedData();
+                //UpdateDisplayedData();
             }
         }
 
@@ -51,11 +51,7 @@ namespace TDSAot.ViewModels
         // 快速切换到不同数量级
         public void SetDisplayCount(int count)
         {
-            if (DisplayCount != count)
-            {
-                if (count < 0) count = 0;
-                DisplayCount = count;
-            }
+            DisplayCount = count;
         }
     }
 }

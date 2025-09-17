@@ -18,10 +18,10 @@ namespace TDSNET.Engine.Actions.USN
 
 
         public Bitmap? icon => FileIconService.GetIcon(FilePath);
-        public string fileName = "";
+        public string innerFileName = "";
         public FrnFileOrigin parentFrn = null;
 
-        public string FileName => PathHelper.getfileName(fileName).ToString();
+        public string FileName => PathHelper.getfileName(innerFileName).ToString();
         public string FilePath => PathHelper.GetPath(this).ToString();
 
         public string FileInfo=> PathHelper.getFileInfoStr(this);
@@ -41,7 +41,7 @@ namespace TDSNET.Engine.Actions.USN
 
         private FrnFileOrigin(string filename, ulong fileRefNum)
         {
-            fileName = filename;
+            innerFileName = filename;
             fileReferenceNumber = fileRefNum;
         }
 
@@ -104,7 +104,7 @@ namespace TDSNET.Engine.Actions.USN
                             GetNACNNameAndIndex(f.Name, out var nacnName, out var index);
                             
                             FrnFileOrigin frn = files[f.FileReferenceNumber];              
-                             frn.fileName = nacnName;
+                             frn.innerFileName = nacnName;
                              frn.keyindex = index;
                             files[f.FileReferenceNumber] = frn;
                         }
@@ -141,10 +141,6 @@ namespace TDSNET.Engine.Actions.USN
         {
             ntfsUsnJournal.GetNtfsVolumeAllentries(driveInfoData.Name[0], out NtfsUsnJournal.UsnJournalReturnCode rtnCode, this);
         }
-
-        private const char POSITIVE = '1';
-
-        private const char NEGATIVE = '0';
 
         private const int SCREENCHARNUM = 45;
 

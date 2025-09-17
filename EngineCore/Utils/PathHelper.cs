@@ -42,23 +42,38 @@ namespace TDSNET.Utils
         }
 
 
-        public static ReadOnlySpan<char> getfileName(ReadOnlySpan<char> filename)
+        public static ReadOnlySpan<char> getfileNameNormalize(ReadOnlySpan<char> filename)
         {
-            var index1 = filename.IndexOf('|');
-            if (index1 < 0) return ReadOnlySpan<char>.Empty;
-            var filename2 = filename.Slice(index1 + 1, filename.Length - index1 - 1);
+            filename = filename.Trim('|');
 
-            var index2 = filename2.IndexOf('|');
-            if (index1 < 0)
+            var index = filename.IndexOf('|');
+            if (index < 0)
             {
-                return filename2;
+                return ReadOnlySpan<char>.Empty;
+            }
+            else if (index + 1 < filename.Length)
+            {
+                return filename.Slice(index + 1, filename.Length - index - 1);
             }
             else
             {
-                return filename2.Slice(0, index2);
+                return ReadOnlySpan<char>.Empty;
             }
+        }
 
-            //if (filename.Length > 0) { string[] fn = filename.ToString().Split('|'); if (fn.GetUpperBound(0) > 0) { return fn[1]; } }
+        public static ReadOnlySpan<char> getfileName(ReadOnlySpan<char> filename)
+        {
+            filename = filename.Trim('|');
+            
+            var index = filename.IndexOf('|');
+            if (index < 0)
+            {
+                return filename;
+            }
+            else
+            {
+                return filename.Slice(0, index);
+            }
         }
 
         public static ReadOnlySpan<char> GetPath(FrnFileOrigin f)
