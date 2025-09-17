@@ -31,7 +31,6 @@ namespace TDSAot
             while (runningState.Threadrunning == true && !cancellationToken.IsCancellationRequested)
             {
                 string[] dwords = null;
-                words=[];
                 int resultNum = 0;
                 UInt64 unidwords = 0;
                 UInt64 uniwords;
@@ -39,13 +38,14 @@ namespace TDSAot
                 
                 try
                 {
-                    await runningState.gOs.WaitAsync(cancellationToken);
+                    await runningState.gOs.WaitAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch
                 {
                     break;
                 }
 
+                words=[];
 
                 runningState.Threadrest = false;  //÷ÿ∆Ù±Í«©
 
@@ -275,7 +275,7 @@ Restart:;
 
         private void UpdateList(bool finished = true)
         {
-            UpdateData(vlist, resultNumGlobal, finished);
+            UpdateData(vlist, resultNumGlobal);
 
             if (finished == false)
             {

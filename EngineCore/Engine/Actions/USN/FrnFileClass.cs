@@ -142,10 +142,6 @@ namespace TDSNET.Engine.Actions.USN
             ntfsUsnJournal.GetNtfsVolumeAllentries(driveInfoData.Name[0], out NtfsUsnJournal.UsnJournalReturnCode rtnCode, this);
         }
 
-        private const char POSITIVE = '1';
-
-        private const char NEGATIVE = '0';
-
         private const int SCREENCHARNUM = 45;
 
         private static readonly char[] alphbet = { '@', '.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '-', '_', '[', ']', '(', ')', '/' };

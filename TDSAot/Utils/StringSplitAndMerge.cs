@@ -32,10 +32,13 @@ public static class StringSplitAndMerge
             return Array.Empty<TextMatch>();
 
         // 检查长度一致性
-        if (!text1.IsEmpty && !text2.IsEmpty && text1.Length != text2.Length)
+        if (!text1.IsEmpty && text1.Length != text2.Length)
             ThrowLengthMismatch();
 
-        int textLength = text1.IsEmpty ? text2.Length : text1.Length;
+        if (group1Words.Length != group2Words.Length)
+            ThrowKeywordsCountMismatch();
+
+        int textLength =text1.Length;
 
         // 使用栈分配的小缓冲区
         Span<(int Start, int End, byte GroupId)> matchesSpan = stackalloc (int, int, byte)[MaxStackAllocSize];
@@ -43,9 +46,14 @@ public static class StringSplitAndMerge
 
         try
         {
-            // 并行查找两组匹配
-            FindGroupMatchesParallel(ref matchesList, text1, group1Words, 1);
-            FindGroupMatchesParallel(ref matchesList, text2, group2Words, 2);
+            // 使用bool数组标记哪些关键词已经被匹配
+            bool[] matchedKeywords = new bool[group1Words.Length];
+
+            // 先查找group1的匹配
+            FindGroupMatchesWithExclusion(ref matchesList, text1, group1Words, 1, matchedKeywords);
+
+            // 然后查找group2中未被排除的关键词
+            FindGroupMatchesWithExclusion(ref matchesList, text2, group2Words, 2, matchedKeywords);
 
             if (matchesList.Count == 0)
             {
@@ -67,19 +75,31 @@ public static class StringSplitAndMerge
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void FindGroupMatchesParallel(
+    private static void FindGroupMatchesWithExclusion(
         ref ValueList<(int Start, int End, byte GroupId)> matchesList,
-        ReadOnlySpan<char> text, string[] words, byte groupId)
+        ReadOnlySpan<char> text, string[] words, byte groupId,
+        bool[] excludedKeywords)
     {
         if (text.IsEmpty || words is not { Length: > 0 })
             return;
 
-        foreach (var word in words)
+        for (int i = 0; i < words.Length; i++)
         {
+            // 如果这个关键词已经被匹配过（在另一组中），则跳过
+            if (excludedKeywords[i]) continue;
+
+            var word = words[i];
             if (string.IsNullOrEmpty(word)) continue;
 
             var wordSpan = word.AsSpan();
             FindAllOccurrences(ref matchesList, text, wordSpan, groupId);
+
+            // 如果找到了匹配，标记这个索引为已匹配，这样另一组就不会再匹配对应的关键词
+            // 注意：这里假设如果找到了至少一个匹配，就认为这个关键词被匹配了
+            if (matchesList.Count > 0 && matchesList.AsSpan()[^1].GroupId == groupId)
+            {
+                excludedKeywords[i] = true;
+            }
         }
     }
 
@@ -92,49 +112,14 @@ public static class StringSplitAndMerge
         if (patternLength == 0 || text.Length < patternLength)
             return;
 
-        // 使用 SIMD 优化的搜索（如果可用）
-        if (patternLength <= 16 && text.Length >= patternLength * 2)
-        {
-            FindWithSimdOptimization(ref matchesList, text, pattern, groupId);
-        }
-        else
-        {
-            FindWithSimpleLoop(ref matchesList, text, pattern, groupId);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void FindWithSimpleLoop(
-        ref ValueList<(int Start, int End, byte GroupId)> matchesList,
-        ReadOnlySpan<char> text, ReadOnlySpan<char> pattern, byte groupId)
-    {
-        int patternLength = pattern.Length;
         int maxIndex = text.Length - patternLength;
 
-        for (int i = 0; i <= maxIndex; i++)
-        {
-            if (text.Slice(i, patternLength).SequenceEqual(pattern))
-            {
-                matchesList.Add((i, i + patternLength - 1, groupId));
-            }
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void FindWithSimdOptimization(
-        ref ValueList<(int Start, int End, byte GroupId)> matchesList,
-        ReadOnlySpan<char> text, ReadOnlySpan<char> pattern, byte groupId)
-    {
-        int patternLength = pattern.Length;
-        int maxIndex = text.Length - patternLength;
-
-        // 对于短模式，使用更激进的循环展开
         for (int i = 0; i <= maxIndex; i++)
         {
             bool match = true;
             for (int j = 0; j < patternLength; j++)
             {
-                if (text[i + j] != pattern[j])
+                if (char.ToUpper(text[i + j]) != pattern[j])
                 {
                     match = false;
                     break;
@@ -236,10 +221,46 @@ public static class StringSplitAndMerge
     private static void ThrowLengthMismatch() =>
         throw new ArgumentException("text1 and text2 must have the same length");
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void ThrowKeywordsCountMismatch() =>
+        throw new ArgumentException("group1Words and group2Words must have the same length");
+
     // 单独处理单组的方法
-    public static TextMatch[] GetTextMatches(ReadOnlySpan<char> text, string[] words)
+    public static TextMatch[] GetTextMatches(ReadOnlySpan<char> text1, string[] group1Words)
     {
-        return GetTextMatches(text, words, ReadOnlySpan<char>.Empty, Array.Empty<string>());
+        if (text1.IsEmpty)
+            return Array.Empty<TextMatch>();
+
+       
+        int textLength = text1.Length;
+
+        // 使用栈分配的小缓冲区
+        Span<(int Start, int End, byte GroupId)> matchesSpan = stackalloc (int, int, byte)[MaxStackAllocSize];
+        var matchesList = new ValueList<(int Start, int End, byte GroupId)>(matchesSpan);
+
+        try
+        {
+            // 使用bool数组标记哪些关键词已经被匹配
+            bool[] matchedKeywords = new bool[group1Words.Length];
+
+            // 先查找group1的匹配
+            FindGroupMatchesWithExclusion(ref matchesList, text1, group1Words, 1, matchedKeywords);
+
+            if (matchesList.Count == 0)
+            {
+                return [new TextMatch(0, text1.Length, false, 0)];
+            }
+
+            // 原地排序和合并
+            SortAndMergeIntervals(ref matchesList);
+
+            // 构建结果
+            return BuildMatches(textLength, ref matchesList);
+        }
+        finally
+        {
+            matchesList.Dispose();
+        }
     }
 }
 

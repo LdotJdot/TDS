@@ -15,12 +15,12 @@ namespace TDSAot
 
         public DataViewModel Items { get; } = new DataViewModel();
 
-        void UpdateData(IList<FrnFileOrigin> data, int count, bool updateWindow = true)
+        void UpdateData(IList<FrnFileOrigin> data, int count)
         {
             Items.Bind(data);
             Items.SetDisplayCount(count);
 
-            if (Option?.AutoAdjust == true && updateWindow)
+            if (Option?.AutoAdjust == true)
             {
                 Dispatcher.UIThread.InvokeAsync(()=>AdjustWindowForSize(count));
             }

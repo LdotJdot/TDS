@@ -4,8 +4,11 @@ using Avalonia.Data.Converters;
 using Avalonia.Media;
 using System;
 using System.Globalization;
+using System.Linq;
 using TDSAot.Utils;
 using TDSNET.Engine.Actions.USN;
+using TDSNET.Engine.Utils;
+using TDSNET.Utils;
 
 namespace TDSAot
 {
@@ -24,52 +27,50 @@ namespace TDSAot
 
             var inlines = new InlineCollection();
 
-            //try
-            //{
 
-            //}
-            //catch
+            var nameOrigin = frn.FileName;
+            if (MainWindow.words.Length == 0)
+            {
+                 inlines.Add(new Run { Text = frn.FileName });
+                return inlines;
+            }
+            try
+            {
+                var words = MainWindow.words.Select(o => o.Trim('|'));
+                TextMatch[] results;
+                var nameNorm = PathHelper.getfileNameNormalize(frn.innerFileName);
+                if (nameNorm.Length == 0)
+                {
+                    results = StringSplitAndMerge.GetTextMatches(
+                        nameOrigin,
+                        words.ToArray()
+                        );
+                }
+                else
+                {
+                    results = StringSplitAndMerge.GetTextMatches(
+                        nameOrigin,
+                        words.ToArray(),
+                        nameNorm,
+                        words.Select(o => SpellCN.GetSpellCode(o)).ToArray()
+                        );
+                }
+
+                foreach (var result in results)
+                {
+                    var run = new Run(nameOrigin.Substring(result.Start, result.Length));
+
+                    if (result.IsMatch) run.Foreground = Brushes.Yellow;
+
+                    inlines.Add(run);
+                }
+            }
+            catch
             {
                 inlines.Clear();
                 inlines.Add(new Run { Text = frn.FileName });
-                return inlines;
             }
-
-            //foreach (var word in keyWords)
-            //{
-
-            //}
-
-            //if (string.IsNullOrEmpty(highlightText))
-            //    return new InlineCollection { new Run { Text = fullText } };
-
-            //var index = fullText.IndexOf(highlightText, StringComparison.OrdinalIgnoreCase);
-
-            //if (index < 0)
-            //{
-            //    inlines.Add(new Run { Text = fullText });
-            //}
-            //else
-            //{
-            //    // 添加高亮前的文本
-            //    if (index > 0)
-            //        inlines.Add(new Run { Text = fullText.Substring(0, index) });
-
-            //    // 添加高亮文本
-            //    inlines.Add(new Run
-            //    {
-            //        Text = fullText.Substring(index, highlightText.Length),
-            //        Foreground = Brushes.Yellow,
-            //    });
-
-            //    // 添加高亮后的文本
-            //    if (index + highlightText.Length < fullText.Length)
-            //        inlines.Add(new Run
-            //        {
-            //            Text = fullText.Substring(index + highlightText.Length)
-            //        });
-            //}
-
+            
             return inlines;
         }
 
