@@ -228,7 +228,7 @@ namespace TDSAot
                                         if (f.innerFileName.IndexOf(key, comparisonType) == -1)
                                         {
                                             finded = false;
-                                            break;
+                                            continue;
                                         }
                                     }
                                 }

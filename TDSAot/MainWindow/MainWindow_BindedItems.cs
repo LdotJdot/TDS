@@ -23,7 +23,7 @@ namespace TDSAot
             if (Option?.AutoAdjust == true)
             {
                 Dispatcher.UIThread.InvokeAsync(()=>AdjustWindowForSize(count));
-            }
+            }            
         }
     }
 }
