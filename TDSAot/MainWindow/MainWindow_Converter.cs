@@ -30,6 +30,7 @@ namespace TDSAot
 
 
             var nameOrigin = frn.FileName;
+            var nameOriginUpper = nameOrigin.ToUpper();
             if (MainWindow.words.Length == 0)
             {
                  inlines.Add(new Run { Text = frn.FileName });
@@ -43,14 +44,14 @@ namespace TDSAot
                 if (nameNorm.Length == 0)
                 {
                     results = StringSplitAndMerge.GetTextMatches(
-                        nameOrigin,
+                        nameOriginUpper,
                         words.ToArray()
                         );
                 }
                 else
                 {
                     results = StringSplitAndMerge.GetTextMatches(
-                        nameOrigin,
+                        nameOriginUpper,
                         words.ToArray(),
                         nameNorm,
                         words.Select(o => SpellCN.GetSpellCode(o)).ToArray()

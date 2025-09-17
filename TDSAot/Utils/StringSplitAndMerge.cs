@@ -94,9 +94,12 @@ public static class StringSplitAndMerge
             var wordSpan = word.AsSpan();
             FindAllOccurrences(ref matchesList, text, wordSpan, groupId);
 
+            // 保存当前匹配列表的数量，以便检测是否找到了新匹配
+            int originalCount = matchesList.Count;
+
             // 如果找到了匹配，标记这个索引为已匹配，这样另一组就不会再匹配对应的关键词
             // 注意：这里假设如果找到了至少一个匹配，就认为这个关键词被匹配了
-            if (matchesList.Count > 0 && matchesList.AsSpan()[^1].GroupId == groupId)
+            if (matchesList.Count > originalCount && matchesList.AsSpan()[^1].GroupId == groupId)
             {
                 excludedKeywords[i] = true;
             }
@@ -119,7 +122,7 @@ public static class StringSplitAndMerge
             bool match = true;
             for (int j = 0; j < patternLength; j++)
             {
-                if (char.ToUpper(text[i + j]) != pattern[j])
+                if (text[i + j]!= pattern[j])
                 {
                     match = false;
                     break;
