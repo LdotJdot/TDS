@@ -2,6 +2,8 @@
 
 [2025.1.1.6] Welcome to TDS, your go-to tool for lightning-fast file searches on Windows systems.
 
+(Tip:Support Pinyin Initial Abbreviation Translation.)
+
 ![image](./ui.png)  
 
 Sample: List all the files with the name contains "log" and ended with ".json" in the folder "App" from disks "c:" and "d:"  
