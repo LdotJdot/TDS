@@ -19,6 +19,7 @@ namespace TDSAot
 
     public class HighlightTextConverter : IValueConverter
     {
+        IBrush highlightBrush = Brush.Parse("#00BFFF");
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             var frn = value as FrnFileOrigin;
@@ -60,7 +61,7 @@ namespace TDSAot
                 {
                     var run = new Run(nameOrigin.Substring(result.Start, result.Length));
 
-                    if (result.IsMatch) run.Foreground = Brushes.Yellow;
+                    if (result.IsMatch) run.Foreground =highlightBrush;
 
                     inlines.Add(run);
                 }
