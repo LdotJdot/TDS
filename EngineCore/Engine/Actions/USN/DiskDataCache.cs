@@ -59,7 +59,7 @@ namespace EngineCore.Engine.Actions.USN
             {
                 writer.Write(file.fileReferenceNumber);
                 writer.Write(file.parentFileReferenceNumber);
-                writer.Write(file.fileName);
+                writer.Write(file.innerFileName);
                 writer.Write(file.keyindex);
             }
             writer.Write(ENDTAG);

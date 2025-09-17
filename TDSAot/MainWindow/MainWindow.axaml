@@ -14,7 +14,10 @@
         ExtendClientAreaTitleBarHeightHint="-1"
 		IsVisible = "False"
 		>
-		
+
+	<Window.Resources>
+		<local:HighlightTextConverter x:Key="HighlightConverter"/>
+	</Window.Resources>
 	
 	<DockPanel  LastChildFill="True">
 
@@ -78,7 +81,11 @@
 									   Stretch="Uniform"/>
 								<StackPanel Spacing="1" Grid.Column="1" VerticalAlignment="Center" Margin="6,0,0,0">
 									<Grid ColumnDefinitions="Auto,*">
-										<TextBlock Text="{Binding FileName, Mode=OneWay}" FontSize="16" VerticalAlignment="Center"/>
+										<TextBlock
+											Inlines="{Binding, 
+											Mode=OneWay,
+                           Converter={StaticResource HighlightConverter}}"
+											FontSize="16" VerticalAlignment="Center"/>
 										<TextBlock Grid.Column="1" Text="{Binding FileInfo, Mode=OneWay}"
 												  Foreground="#888888"
 												  VerticalAlignment="Center"

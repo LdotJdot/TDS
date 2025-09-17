@@ -182,7 +182,7 @@ namespace TDSAot
 
                     foreach (var f in fs.files.Values)
                     {
-                        string ext = StringUtils.GetExtension(PathHelper.getfileName(f.fileName)).ToString();
+                        string ext = StringUtils.GetExtension(PathHelper.getfileName(f.innerFileName)).ToString();
 
                         if (string.Equals(ext, ".LNK", StringComparison.OrdinalIgnoreCase))
                         {
@@ -267,17 +267,17 @@ namespace TDSAot
 
                         foreach (var f in fs.files.Values)
                         {
-                            FileSys.GetNACNNameAndIndex(f.fileName, out var nacnName, out var index, SpellDict);
+                            FileSys.GetNACNNameAndIndex(f.innerFileName, out var nacnName, out var index, SpellDict);
 
                             f.keyindex = index;
-                            f.fileName = nacnName;
+                            f.innerFileName = nacnName;
                         }
 
                         HashSet<FrnFileOrigin> first = new HashSet<FrnFileOrigin>();
 
                         foreach (var f in fs.files.Values)
                         {
-                            string ext = StringUtils.GetExtension(PathHelper.getfileName(f.fileName)).ToString();
+                            string ext = StringUtils.GetExtension(PathHelper.getfileName(f.innerFileName)).ToString();
 
                             if (string.Equals(ext, ".LNK", StringComparison.OrdinalIgnoreCase))
                             {

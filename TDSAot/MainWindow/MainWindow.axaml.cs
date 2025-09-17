@@ -14,7 +14,6 @@ namespace TDSAot
 {
     public partial class MainWindow : Window
     {
-
         internal AppOption Option;
 
         public static void CheckRunningAsAdministrator()
@@ -32,7 +31,7 @@ namespace TDSAot
         {
             if (!ApplicationSingleton.Check())
             {
-                Message.ShowWaringOk("Program already running", "Another instance of the program is already running.");
+                Message.ShowWaringOk("Program already running", "Another instance of the program is already running. Check the right corner of your desktop.");
                 Exit();
             }
             CheckRunningAsAdministrator();
@@ -105,7 +104,6 @@ namespace TDSAot
 
 
             InitializeHotKeys(hwnd);
-
             fileListBox.Focusable = true;
             // 初始化配置文件
 
