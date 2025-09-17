@@ -31,8 +31,8 @@ namespace TDSAot
         {
             if (StaticState.CanBeHide)
             {
-                this.WindowState = WindowState.Minimized;
                 this.IsVisible = false;
+               // this.WindowState = WindowState.Minimized;
             }
         }
 
@@ -46,14 +46,14 @@ namespace TDSAot
                 inputBox.Focus();
                 inputBox.SelectAll();
             }
-            this.WindowState = WindowState.Normal;
+            //this.WindowState = WindowState.Normal;
             WindowUtils.ForceForegroundWindow(this.hwnd);
         }
 
         private void OnWindowDeactivated(object? sender, EventArgs e)
         {
             lastFocused = FocusManager?.GetFocusedElement();
-            if (Option.AutoHide)
+            if (Option!=null && Option.AutoHide)
             {
                 HideWindow();
             }
@@ -88,6 +88,27 @@ namespace TDSAot
         {
             this.Height = DefaultHeight;
 
+        }
+
+        private void SetWindowSizeByScreenRatio(double widthRatio, double heightRatio)
+        {
+            this.WindowState = WindowState.Normal;
+            var screen = Screens.Primary;
+            if (screen != null)
+            {
+                this.IsVisible = false;
+                WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                var workingArea = screen.WorkingArea;
+                Width = workingArea.Width * widthRatio;
+                DefaultHeight = workingArea.Height * heightRatio;
+            }
+            else
+            {
+                // 备用方案
+                Width = 1024 * widthRatio;
+                DefaultHeight = 768 * heightRatio;
+            }
+            AdjustWindowForTitleOnly();
         }
     }
 }

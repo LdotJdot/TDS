@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using System.Linq;
+using TDSAot.State;
 using TDSAot.Utils;
 using TDSNET.Engine.Actions.USN;
 
@@ -15,7 +16,11 @@ namespace TDSAot
         {
             foreach (var file in GetSelectedItems())
             {
+                StaticState.CanBeHide = false;
+                this.Topmost = false;
                 FilePropertiesOpener.ShowFileProperties(file.FilePath);
+                this.Topmost = Option.AlwaysTop;
+                StaticState.CanBeHide = true;
                 UpdateRecord(file);
             }
         }
@@ -29,7 +34,12 @@ namespace TDSAot
         {
             foreach (var file in GetSelectedItems())
             {
+                StaticState.CanBeHide = false;
+                this.Topmost = false;
                 FilePropertiesOpener.ShowFileOpenWith(file.FilePath);
+                this.Topmost = Option.AlwaysTop;
+                StaticState.CanBeHide = true;
+
                 UpdateRecord(file);
             }
         }
@@ -41,7 +51,12 @@ namespace TDSAot
 
         private void Delete(object sender, RoutedEventArgs e)
         {
+            StaticState.CanBeHide = false;
+            this.Topmost = false;
             Execute(GetSelectedItems(), FileActionType.Delete);
+            this.Topmost = Option.AlwaysTop;
+            StaticState.CanBeHide = true;
+
             RefreshFileData();
         }
 
