@@ -94,7 +94,6 @@
                 Message.ShowWaringOk("文件不存在", filePath);
                 return;
             }
-            StaticState.CanBeHide = false;
 
             OPENASINFO info = new OPENASINFO();
             info.pcszFile = filePath;
@@ -102,7 +101,6 @@
             info.oaifInFlags = OAIF_ALLOW_REGISTRATION | OAIF_EXEC;
             StaticState.CanBeHide = false;
             SHOpenWithDialog(IntPtr.Zero, ref info);
-            StaticState.CanBeHide = true;
         }
     }
 }

@@ -32,6 +32,8 @@ namespace TDSAot
 
         private void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
+            SetWindowSizeByScreenRatio(0.4, 0.5);
+
             Reset();
         }
 
