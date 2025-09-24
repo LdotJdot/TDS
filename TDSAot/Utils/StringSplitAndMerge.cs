@@ -22,7 +22,7 @@ public readonly struct TextMatch
 
 public static class StringSplitAndMerge
 {
-    private const int MaxStackAllocSize = 256;
+    private const int MaxStackAllocSize = 128;
 
     public static TextMatch[] GetTextMatches(
         ReadOnlySpan<char> text1, string[] group1Words,
