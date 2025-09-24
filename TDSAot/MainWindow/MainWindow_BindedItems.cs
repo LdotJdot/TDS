@@ -15,11 +15,14 @@ namespace TDSAot
 
         public DataViewModel Items { get; } = new DataViewModel();
 
-        void UpdateData(IList<FrnFileOrigin> data, int count)
+        void UpdateData(IList<FrnFileOrigin> data, int count, bool finished)
         {
             Items.Bind(data);
             Items.SetDisplayCount(count);
-            Items.UpdateDisplayedData();
+            if (!finished || Option.AutoAdjust)
+            {
+                Items.UpdateDisplayedData();
+            }
 
             if (Option?.AutoAdjust == true)
             {

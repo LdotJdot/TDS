@@ -154,6 +154,7 @@ namespace TDSAot
                         var comparisondType = unidwords == 0 ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
                         var comparisonType = uniwords == 0 ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
+                       
                         bool finded = true;
 
                         foreach (var f in fs.files.Values)
@@ -278,7 +279,7 @@ Restart:;
         private void UpdateList(bool finished = true)
         {
 
-            UpdateData(vlist, resultNumGlobal);
+            UpdateData(vlist, resultNumGlobal, finished);
 
             if (finished == false)
             {
