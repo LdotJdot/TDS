@@ -23,7 +23,7 @@ namespace TDSAot
         readonly private RunningState runningState=new RunningState();
 
         int resultNumGlobal= 0;
-        static internal string[] words;
+         static internal string[] words;
 
         private async void SearchFilesThreadLoop(CancellationToken cancellationToken)
         {
@@ -279,7 +279,7 @@ Restart:;
         private void UpdateList(bool finished = true)
         {
 
-            UpdateData(vlist, resultNumGlobal, finished);
+            UpdateData(vlist, resultNumGlobal);
 
             if (finished == false)
             {
