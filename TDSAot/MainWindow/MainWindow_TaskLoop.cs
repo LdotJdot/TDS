@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TDS.Utils;
 using TDSAot.State;
 using TDSNET.Engine.Actions.USN;
 using TDSNET.Engine.Utils;
@@ -173,7 +174,7 @@ namespace TDSAot
 
                                     foreach (string key in dwords)
                                     {
-                                        if (dictmp.innerFileName.IndexOf(key, comparisondType) == -1)
+                                        if (SpanCharUtils.NotContains(dictmp.innerFileName,key))
                                         {
                                             finded = false;
                                             break;
@@ -193,10 +194,11 @@ namespace TDSAot
                                     finded = false;
                                     continue;
                                 }
-
+                                
+                                var filenamespan=f.innerFileName.AsSpan();
                                 if (words.Length == 1)
                                 {
-                                    if (f.innerFileName.IndexOf(words[0], comparisonType) == -1)
+                                    if (SpanCharUtils.NotContains(filenamespan, words[0]))
                                     {
                                         finded = false;
                                         continue;
@@ -204,8 +206,8 @@ namespace TDSAot
                                 }
                                 else if (words.Length == 2)
                                 {
-                                    if (f.innerFileName.IndexOf(words[0], comparisonType) == -1 ||
-                                        f.innerFileName.IndexOf(words[1], comparisonType) == -1)
+                                    if (SpanCharUtils.NotContains(filenamespan, words[0]) ||
+                                        SpanCharUtils.NotContains(filenamespan, words[1]))
                                     {
                                         finded = false;
                                         continue;
@@ -213,9 +215,9 @@ namespace TDSAot
                                 }
                                 else if (words.Length == 3)
                                 {
-                                    if (f.innerFileName.IndexOf(words[0], comparisonType) == -1 ||
-                                        f.innerFileName.IndexOf(words[1], comparisonType) == -1 ||
-                                        f.innerFileName.IndexOf(words[2], comparisonType) == -1)
+                                    if (SpanCharUtils.NotContains(filenamespan, words[0]) ||
+                                        SpanCharUtils.NotContains(filenamespan, words[1]) ||
+                                        SpanCharUtils.NotContains(filenamespan, words[2]))
                                     {
                                         finded = false;
                                         continue;
@@ -225,7 +227,7 @@ namespace TDSAot
                                 {
                                     foreach (string key in words)
                                     {
-                                        if (f.innerFileName.IndexOf(key, comparisonType) == -1)
+                                        if (SpanCharUtils.NotContains(filenamespan, key))
                                         {
                                             finded = false;
                                             continue;
@@ -275,6 +277,7 @@ Restart:;
 
         private void UpdateList(bool finished = true)
         {
+
             UpdateData(vlist, resultNumGlobal);
 
             if (finished == false)

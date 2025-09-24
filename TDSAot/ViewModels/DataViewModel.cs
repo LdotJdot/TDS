@@ -24,7 +24,6 @@ namespace TDSAot.ViewModels
             private set
             {
                 _displayCount = value;
-                UpdateDisplayedData();
             }
         }
 
@@ -42,7 +41,7 @@ namespace TDSAot.ViewModels
             }
         }
 
-        private void UpdateDisplayedData()
+        public void UpdateDisplayedData()
         {
             // 使用 LINQ 的 Take()，这是惰性求值的，性能很好
             DisplayedData = _allData.Take(DisplayCount);

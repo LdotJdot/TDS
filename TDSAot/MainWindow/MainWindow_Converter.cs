@@ -3,6 +3,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using TDSAot.Utils;
@@ -22,9 +23,12 @@ namespace TDSAot
         IBrush highlightBrush = Brush.Parse("#00BFFF");
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
+            if (value == null)
+            {
+                return null;
+            }
             var frn = value as FrnFileOrigin;
-            
-            if (frn == null) return null;
+
 
             var inlines = new InlineCollection();
 
