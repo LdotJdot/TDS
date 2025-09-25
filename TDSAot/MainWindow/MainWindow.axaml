@@ -32,7 +32,6 @@
 					TextChanged="TextChanged" 
 					VerticalAlignment="Bottom"
 					Margin="5,5,5,5"
-					SelectionBrush="#C1CDCD"
 					/>
 
 				<TextBlock FontSize="16" Text="{Binding MessageData.Message, Mode=OneWay}" VerticalAlignment="Center"

@@ -27,6 +27,7 @@ namespace TDSAot
         {
             if (string.IsNullOrWhiteSpace(bufferedText))
             {
+                words = [];
                 ChangeToRecord();
             }
             else if(!bufferedText.Equals(bufferedText_prev, StringComparison.OrdinalIgnoreCase))
@@ -39,7 +40,6 @@ namespace TDSAot
                 }                
             }
             bufferedText_prev = bufferedText;
-
         }
 
 

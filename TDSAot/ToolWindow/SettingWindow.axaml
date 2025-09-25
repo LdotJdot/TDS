@@ -12,7 +12,7 @@
         MinWidth="420"
         MinHeight="460"
         WindowStartupLocation="CenterOwner"
-        CanResize="False"
+        CanResize="True"
         WindowState="Normal"
         x:DataType="vm:SettingsViewModel"
 		>

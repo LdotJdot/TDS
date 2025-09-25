@@ -13,7 +13,7 @@
 	  <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 	  <OptimizationPreference>Speed</OptimizationPreference>
 	  <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-	  <PublishAot>true</PublishAot>
+	  <!--<PublishAot>true</PublishAot>-->
 	  <TrimMode>full</TrimMode>
 	  <InvariantGlobalization>true</InvariantGlobalization>
 	  <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
