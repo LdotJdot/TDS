@@ -124,6 +124,10 @@ namespace TDSAot
                 {
                     nmi.IsEnabled = true;
                 }
+                if (_trayIcon.Menu?.Items[2] is NativeMenuItem reindex)
+                {
+                    reindex.IsEnabled = true;
+                }
                 if (_trayIcon.Menu?.Items[4] is NativeMenuItem exit)
                 {
                     exit.IsEnabled = true;
@@ -143,6 +147,10 @@ namespace TDSAot
                 if (_trayIcon.Menu?.Items[1] is NativeMenuItem nmi)
                 {
                     nmi.IsEnabled = false;
+                }
+                if (_trayIcon.Menu?.Items[2] is NativeMenuItem reindex)
+                {
+                    reindex.IsEnabled = false;
                 }
                 if (_trayIcon.Menu?.Items[4] is NativeMenuItem exit)
                 {

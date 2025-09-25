@@ -57,13 +57,17 @@ namespace TDSAot.Utils
             }
 
             var files = filePaths
-                .Select(o =>  storageProvider.TryGetFileFromPathAsync(o).GetAwaiter().GetResult())
+                .Select(o =>  (IStorageItem)storageProvider.TryGetFileFromPathAsync(o).GetAwaiter().GetResult())
                 .Where(o=>o!=null)
+                ;
+            var folders=filePaths
+                .Select(o => (IStorageItem)storageProvider.TryGetFolderFromPathAsync(o).GetAwaiter().GetResult())
+                .Where(o => o != null)
                 ;
             DataObject dataObject = new();
             dataObject.Set(
                 DataFormats.Files,
-                files.ToArray());
+                files.Concat(folders));
             await clipboard.SetDataObjectAsync(dataObject);
 
 
