@@ -14,6 +14,8 @@ You can type: c,d: App\ log .json| /a
 
 TDS is a powerful, efficient, and user-friendly application designed to help you quickly locate and manage files on your Windows system. It is developed using the latest C# 9 and Avalonia UI technologies and compiled under AOT (Ahead-Of-Time) for optimal performance.
 
+Now it is a single .exe file less than 29MB!
+
 ## Features
 
 - **Speed**: Ultra-fast search capabilities to find files in the blink of an eye.
