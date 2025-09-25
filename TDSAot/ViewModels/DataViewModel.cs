@@ -18,12 +18,23 @@ namespace TDSAot.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _displayedData, value);
         }
 
+        bool isShowOpenWith = true;
+        public bool IsShowOpenWith
+        {
+            get => isShowOpenWith;
+            set
+            {
+                 this.RaiseAndSetIfChanged(ref isShowOpenWith, value);
+            }
+        }
+
         public int DisplayCount
         {
             get => _displayCount;
             private set
             {
                 _displayCount = value;
+
             }
         }
 

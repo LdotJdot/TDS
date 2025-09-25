@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -167,6 +168,22 @@ namespace TDSAot
                 }
             }
             return _selectItemsList.ToArray();
+        }
+
+        private void OnContextMenuOpened(object sender, RoutedEventArgs e)
+        {
+            var men = sender as ContextMenu;
+            if (fileListBox.SelectedItems?.Count == 1)
+            {
+                if(fileListBox.SelectedItems[0] is FrnFileOrigin frn
+                    
+                    && File.Exists(frn.FilePath))
+                {
+                    Items.IsShowOpenWith = true;
+                return;
+                }
+            }
+           Items.IsShowOpenWith = false;
         }
     }
 

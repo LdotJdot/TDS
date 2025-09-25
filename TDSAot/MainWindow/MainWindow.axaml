@@ -55,9 +55,9 @@
 						 >
 						<!-- 将 ContextMenu 绑定到 ListBox -->
 						<ListBox.ContextMenu>
-							<ContextMenu>
+							<ContextMenu Opened="OnContextMenuOpened">
 								<MenuItem Header="Open (Enter)" Click="OpenFile"/>
-								<MenuItem Header="Open with...(Shift+Enter)" Click="OpenFileWith"/>
+								<MenuItem Header="Open with...(Shift+Enter)" Click="OpenFileWith"  IsVisible="{Binding Items.IsShowOpenWith}"/>
 								<MenuItem Header="Open folder (Space)" Click="OpenFolder"/>
 								<MenuItem Header="Copy (Ctrl+C)" Click="Copy"/>
 								<MenuItem Header="Copy path (Ctrl+P)" Click="CopyPath"/>
