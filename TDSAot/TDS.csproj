@@ -13,7 +13,7 @@
 	  <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 	  <OptimizationPreference>Speed</OptimizationPreference>
 	  <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-	  <PublishAot>true</PublishAot>
+	  <!--<PublishAot>true</PublishAot>-->
 	  <TrimMode>full</TrimMode>
 	  <InvariantGlobalization>true</InvariantGlobalization>
 	  <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
@@ -40,6 +40,7 @@
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.9" />
   </ItemGroup>
 
   <ItemGroup>

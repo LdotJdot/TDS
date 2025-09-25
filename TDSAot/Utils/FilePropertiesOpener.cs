@@ -52,7 +52,7 @@
         /// <returns>是否成功</returns>
         public static bool ShowFileProperties(string filePath)
         {
-            if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
+            if (string.IsNullOrEmpty(filePath) || !Path.Exists(filePath))
             {
                 return false;
             }

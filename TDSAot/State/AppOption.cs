@@ -146,7 +146,7 @@ namespace TDSAot.State
             UsingCache = true;
             AutoHide = true;
             AlwaysTop = true;
-            AutoAdjust = true;
+            AutoAdjust = false;
             Theme = ThemeType.Default;
             configuration.Save(CurrentOptionPath);
         }

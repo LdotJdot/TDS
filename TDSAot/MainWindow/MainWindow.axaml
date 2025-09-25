@@ -18,89 +18,90 @@
 	<Window.Resources>
 		<local:HighlightTextConverter x:Key="HighlightConverter"/>
 	</Window.Resources>
-	
-	<DockPanel  LastChildFill="True">
+	<Border BorderBrush="Gray" BorderThickness="1">
 
-		<!-- 顶部区域 -->
-		<StackPanel DockPanel.Dock="Top">
-			<Grid >
-				<TextBox 
-					FontSize="18" 
-					x:Name="inputBox" 
-					Height="40" 
-					Text=""
-					TextChanged="TextChanged" 
-					VerticalAlignment="Bottom"
-					Margin="5,5,5,5"
-					SelectionBrush="#C1CDCD"
+		<DockPanel  LastChildFill="True">
+
+			<!-- 顶部区域 -->
+			<StackPanel DockPanel.Dock="Top">
+				<Grid >
+					<TextBox
+						FontSize="18"
+						x:Name="inputBox"
+						Height="40"
+						Text=""
+						TextChanged="TextChanged"
+						VerticalAlignment="Bottom"
+						Margin="5,5,5,5"
 					/>
 
-				<TextBlock FontSize="16" Text="{Binding MessageData.Message, Mode=OneWay}" VerticalAlignment="Center"
-					 HorizontalAlignment="Right" Margin="0,0,10,0" Opacity="0.6" />
-			</Grid>	
-		</StackPanel>
+					<TextBlock FontSize="16" Text="{Binding MessageData.Message, Mode=OneWay}" VerticalAlignment="Center"
+						 HorizontalAlignment="Right" Margin="0,0,10,0" Opacity="0.6" />
+				</Grid>
+			</StackPanel>
 
-	
-		
-		<!-- 底部自适应区域 -->
-		<Grid DockPanel.Dock="Bottom">
-			<ScrollViewer HorizontalScrollBarVisibility="Auto"
-                         VerticalScrollBarVisibility="Auto">
 
-				<ListBox x:Name="fileListBox" ItemsSource="{Binding Items.DisplayedData, Mode=OneWay}" Background="Transparent"
-						 DoubleTapped="ListBox_MouseDoubleClick"
-						 KeyDown="ListBox_KeyDown"
-						 PointerReleased="ListBoxPointerRelease"
-						 SelectionMode="Multiple"
+
+			<!-- 底部自适应区域 -->
+			<Grid DockPanel.Dock="Bottom">
+				<ScrollViewer HorizontalScrollBarVisibility="Auto"
+							 VerticalScrollBarVisibility="Auto">
+
+					<ListBox x:Name="fileListBox" ItemsSource="{Binding Items.DisplayedData, Mode=OneWay}" Background="Transparent"
+							 DoubleTapped="ListBox_MouseDoubleClick"
+							 KeyDown="ListBox_KeyDown"
+							 PointerReleased="ListBoxPointerRelease"
+							 SelectionMode="Multiple"
 						 >
-					<!-- 将 ContextMenu 绑定到 ListBox -->
-					<ListBox.ContextMenu>
-						<ContextMenu>
-							<MenuItem Header="Open (Enter)" Click="OpenFile"/>
-							<MenuItem Header="Open with...(Shift+Enter)" Click="OpenFileWith"/>
-							<MenuItem Header="Open folder (Space)" Click="OpenFolder"/>
-							<MenuItem Header="Copy (Ctrl+C)" Click="Copy"/>
-							<MenuItem Header="Copy path (Ctrl+P)" Click="CopyPath"/>
-							<MenuItem Header="Delete (Del)" Click="Delete"/>
-							<MenuItem Header="Property... (Alt+Enter)" Click="ShowProperty"/>
-						</ContextMenu>
-					</ListBox.ContextMenu>
-					 
-					<!-- 正确的 ItemsPanel 配置 -->
-					<ListBox.ItemsPanel>
-						<ItemsPanelTemplate>
-							<VirtualizingStackPanel />
-						</ItemsPanelTemplate>
-					</ListBox.ItemsPanel>
+						<!-- 将 ContextMenu 绑定到 ListBox -->
+						<ListBox.ContextMenu>
+							<ContextMenu Opened="OnContextMenuOpened">
+								<MenuItem Header="Open (Enter)" Click="OpenFile"/>
+								<MenuItem Header="Open with...(Shift+Enter)" Click="OpenFileWith"  IsVisible="{Binding Items.IsShowOpenWith}"/>
+								<MenuItem Header="Open folder (Space)" Click="OpenFolder"/>
+								<MenuItem Header="Copy (Ctrl+C)" Click="Copy"/>
+								<MenuItem Header="Copy path (Ctrl+P)" Click="CopyPath"/>
+								<MenuItem Header="Delete (Del)" Click="Delete"/>
+								<MenuItem Header="Property... (Alt+Enter)" Click="ShowProperty"/>
+							</ContextMenu>
+						</ListBox.ContextMenu>
 
-					<ListBox.ItemTemplate>
-						<DataTemplate>
-							<Grid  ColumnDefinitions="Auto,*">								
-								<Image Width="32" Height="32" 
-									    Source="{Binding icon, Mode=OneWay}"
-									   Stretch="Uniform"/>
-								<StackPanel Spacing="1" Grid.Column="1" VerticalAlignment="Center" Margin="6,0,0,0">
-									<Grid ColumnDefinitions="Auto,*">
-										<TextBlock
-											Inlines="{Binding, 
+						<!-- 正确的 ItemsPanel 配置 -->
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<VirtualizingStackPanel />
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
+
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<Grid  ColumnDefinitions="Auto,*">
+									<Image Width="32" Height="32"
+											Source="{Binding icon, Mode=OneWay}"
+										   Stretch="Uniform"/>
+									<StackPanel Spacing="1" Grid.Column="1" VerticalAlignment="Center" Margin="6,0,0,0">
+										<Grid ColumnDefinitions="Auto,*">
+											<TextBlock
+												Inlines="{Binding, 
 											Mode=OneWay,
                            Converter={StaticResource HighlightConverter}}"
-											FontSize="16" VerticalAlignment="Center"/>
-										<TextBlock Grid.Column="1" Text="{Binding FileInfo, Mode=OneWay}"
+												FontSize="16" VerticalAlignment="Center"/>
+											<TextBlock Grid.Column="1" Text="{Binding FileInfo, Mode=OneWay}"
+													  Foreground="#888888"
+													  VerticalAlignment="Center"
+													  FontSize="12"
+													  Margin="8,0,0,0"/>
+										</Grid>
+										<TextBlock Text="{Binding FilePath, Mode=OneWay}"
 												  Foreground="#888888"
-												  VerticalAlignment="Center"
-												  FontSize="12" 
-												  Margin="8,0,0,0"/>										
-									</Grid>
-									<TextBlock Text="{Binding FilePath, Mode=OneWay}"
-											  Foreground="#888888"
-											  FontSize="12" />
-								</StackPanel>
-							</Grid>
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
-			</ScrollViewer>
-		</Grid>
-	</DockPanel>
+												  FontSize="12" />
+									</StackPanel>
+								</Grid>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+				</ScrollViewer>
+			</Grid>
+		</DockPanel>
+	</Border>
 </Window>

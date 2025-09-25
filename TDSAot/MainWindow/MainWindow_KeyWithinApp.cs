@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
+using System.Diagnostics;
 using TDSAot.Utils;
 using TDSNET.Engine.Actions.USN;
 
@@ -32,12 +34,12 @@ namespace TDSAot
         private void ESPPress()
         {
             fileListBox.SelectedItems = null;
-            inputBox.Focus();
+           
             if (inputBox.Text?.Length > 0)
             {
                 if (inputBox.SelectedText.Length != inputBox.Text.Length)
                 {
-                    inputBox.SelectAll();                    
+                    inputBox.SelectAll();   // shor characters not render selectionBrush.
                 }
                 else
                 {
@@ -45,6 +47,7 @@ namespace TDSAot
                     inputBox.Clear();
                 }
             }
+            inputBox.Focus();
         }
     }
 }

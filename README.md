@@ -1,6 +1,6 @@
 # TDS - The Ultimate Windows File Finder
 
-[2025.1.1.7] Welcome to TDS, your go-to tool for lightning-fast file searches on Windows systems.
+[2025.1.1.8] Welcome to TDS, your go-to tool for lightning-fast file searches on Windows systems.
 
 (Tip:Support Pinyin Initial Abbreviation Translation.)
 
@@ -13,6 +13,8 @@ You can type: c,d: App\ log .json| /a
 ## Overview
 
 TDS is a powerful, efficient, and user-friendly application designed to help you quickly locate and manage files on your Windows system. It is developed using the latest C# 9 and Avalonia UI technologies and compiled under AOT (Ahead-Of-Time) for optimal performance.
+
+Now it is a single .exe file around 20MB!
 
 ## Features
 

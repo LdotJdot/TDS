@@ -20,10 +20,12 @@ namespace TDSAot
             Items.Bind(data);
             Items.SetDisplayCount(count);
 
+            Items.UpdateDisplayedData();            
+
             if (Option?.AutoAdjust == true)
             {
-                Dispatcher.UIThread.InvokeAsync(()=>AdjustWindowForSize(count));
-            }            
+                Dispatcher.UIThread.InvokeAsync(() => AdjustWindowForSize(count));
+            }
         }
     }
 }

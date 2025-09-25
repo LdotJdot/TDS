@@ -22,7 +22,7 @@ public readonly struct TextMatch
 
 public static class StringSplitAndMerge
 {
-    private const int MaxStackAllocSize = 256;
+    private const int MaxStackAllocSize = 16;
 
     public static TextMatch[] GetTextMatches(
         ReadOnlySpan<char> text1, string[] group1Words,
@@ -47,7 +47,7 @@ public static class StringSplitAndMerge
         try
         {
             // 使用bool数组标记哪些关键词已经被匹配
-            bool[] matchedKeywords = new bool[group1Words.Length];
+            Span<bool> matchedKeywords = stackalloc bool[group1Words.Length];
 
             // 先查找group1的匹配
             FindGroupMatchesWithExclusion(ref matchesList, text1, group1Words, 1, matchedKeywords);
@@ -78,7 +78,7 @@ public static class StringSplitAndMerge
     private static void FindGroupMatchesWithExclusion(
         ref ValueList<(int Start, int End, byte GroupId)> matchesList,
         ReadOnlySpan<char> text, string[] words, byte groupId,
-        bool[] excludedKeywords)
+         Span<bool> excludedKeywords)
     {
         if (text.IsEmpty || words is not { Length: > 0 })
             return;
@@ -107,32 +107,59 @@ public static class StringSplitAndMerge
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void FindAllOccurrences(
+    private static void FindMatchesWithExclusion(
         ref ValueList<(int Start, int End, byte GroupId)> matchesList,
-        ReadOnlySpan<char> text, ReadOnlySpan<char> pattern, byte groupId)
+        ReadOnlySpan<char> text, string[] words)
+    {
+        if (text.IsEmpty || words is not { Length: > 0 })
+            return;
+
+        for (int i = 0; i < words.Length; i++)
+        {
+
+            var word = words[i];
+            if (string.IsNullOrEmpty(word)) continue;
+
+            var wordSpan = word.AsSpan();
+            FindAllOccurrences(ref matchesList, text, wordSpan, 0);
+
+            // 保存当前匹配列表的数量，以便检测是否找到了新匹配
+            int originalCount = matchesList.Count;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void FindAllOccurrences(
+    ref ValueList<(int Start, int End, byte GroupId)> matchesList,
+    ReadOnlySpan<char> text, ReadOnlySpan<char> pattern, byte groupId)
     {
         int patternLength = pattern.Length;
         if (patternLength == 0 || text.Length < patternLength)
             return;
 
-        int maxIndex = text.Length - patternLength;
+        int offset = 0;
 
-        for (int i = 0; i <= maxIndex; i++)
+        while (true)
         {
-            bool match = true;
-            for (int j = 0; j < patternLength; j++)
+            int start = text.IndexOf(pattern, StringComparison.OrdinalIgnoreCase);
+            if (start == -1)
             {
-                if (text[i + j]!= pattern[j])
-                {
-                    match = false;
-                    break;
-                }
+                break;
             }
 
-            if (match)
+            int actualStart = start + offset;
+            int actualEnd = actualStart + patternLength - 1;
+
+            matchesList.Add((actualStart, actualEnd, groupId));
+
+            offset += start + patternLength;
+
+            if (text.Length <= patternLength)
             {
-                matchesList.Add((i, i + patternLength - 1, groupId));
+                break;
             }
+
+            text = text.Slice(start + patternLength);
         }
     }
 
@@ -141,8 +168,9 @@ public static class StringSplitAndMerge
     {
         if (intervals.Count <= 1) return;
 
-        // 使用内联排序
-        SortIntervals(ref intervals);
+        var span = intervals.AsSpan();
+        span.Sort(Comparer.Instance);
+   
 
         // 原地合并
         int writeIndex = 0;
@@ -169,12 +197,6 @@ public static class StringSplitAndMerge
         intervals.Count = writeIndex + 1;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void SortIntervals(ref ValueList<(int Start, int End, byte GroupId)> intervals)
-    {
-        var span = intervals.AsSpan();
-        span.Sort(Comparer.Instance);
-    }
 
     private sealed class Comparer : IComparer<(int Start, int End, byte GroupId)>
     {
@@ -232,7 +254,7 @@ public static class StringSplitAndMerge
     public static TextMatch[] GetTextMatches(ReadOnlySpan<char> text1, string[] group1Words)
     {
         if (text1.IsEmpty)
-            return Array.Empty<TextMatch>();
+            return [];
 
        
         int textLength = text1.Length;
@@ -243,21 +265,16 @@ public static class StringSplitAndMerge
 
         try
         {
-            // 使用bool数组标记哪些关键词已经被匹配
-            bool[] matchedKeywords = new bool[group1Words.Length];
 
-            // 先查找group1的匹配
-            FindGroupMatchesWithExclusion(ref matchesList, text1, group1Words, 1, matchedKeywords);
+            FindMatchesWithExclusion(ref matchesList, text1, group1Words);
 
             if (matchesList.Count == 0)
             {
                 return [new TextMatch(0, text1.Length, false, 0)];
             }
 
-            // 原地排序和合并
             SortAndMergeIntervals(ref matchesList);
 
-            // 构建结果
             return BuildMatches(textLength, ref matchesList);
         }
         finally

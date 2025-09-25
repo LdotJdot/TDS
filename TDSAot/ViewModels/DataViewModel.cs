@@ -18,13 +18,23 @@ namespace TDSAot.ViewModels
             private set => this.RaiseAndSetIfChanged(ref _displayedData, value);
         }
 
+        bool isShowOpenWith = true;
+        public bool IsShowOpenWith
+        {
+            get => isShowOpenWith;
+            set
+            {
+                 this.RaiseAndSetIfChanged(ref isShowOpenWith, value);
+            }
+        }
+
         public int DisplayCount
         {
             get => _displayCount;
             private set
             {
                 _displayCount = value;
-                UpdateDisplayedData();
+
             }
         }
 
@@ -42,7 +52,7 @@ namespace TDSAot.ViewModels
             }
         }
 
-        private void UpdateDisplayedData()
+        public void UpdateDisplayedData()
         {
             // 使用 LINQ 的 Take()，这是惰性求值的，性能很好
             DisplayedData = _allData.Take(DisplayCount);
