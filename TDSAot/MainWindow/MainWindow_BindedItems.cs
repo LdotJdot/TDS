@@ -20,8 +20,7 @@ namespace TDSAot
             Items.Bind(data);
             Items.SetDisplayCount(count);
 
-            Items.UpdateDisplayedData();
-            
+            Items.UpdateDisplayedData();            
 
             if (Option?.AutoAdjust == true)
             {

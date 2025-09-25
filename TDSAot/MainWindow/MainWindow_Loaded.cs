@@ -124,6 +124,10 @@ namespace TDSAot
                 {
                     nmi.IsEnabled = true;
                 }
+                if (_trayIcon.Menu?.Items[4] is NativeMenuItem exit)
+                {
+                    exit.IsEnabled = true;
+                }
                 inputBox.Watermark = "Please input keywords";
                 inputBox.IsEnabled = true;
                 fileListBox.IsEnabled = true;
@@ -139,6 +143,10 @@ namespace TDSAot
                 if (_trayIcon.Menu?.Items[1] is NativeMenuItem nmi)
                 {
                     nmi.IsEnabled = false;
+                }
+                if (_trayIcon.Menu?.Items[4] is NativeMenuItem exit)
+                {
+                    exit.IsEnabled = false;
                 }
                 inputBox.Watermark = "Initialization pending...";
                 inputBox.IsEnabled = false;
