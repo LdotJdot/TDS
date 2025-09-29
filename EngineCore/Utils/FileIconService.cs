@@ -1,4 +1,5 @@
 ﻿using Microsoft.IO;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -115,7 +116,7 @@ public static class FileIconService
         return null;
     }
 
-    const int maxCache = 500;
+    //const int maxCache = 500;
 
     static void SetCache(string ext,Bitmap? icon)
     {
@@ -124,16 +125,16 @@ public static class FileIconService
 
         if (!iconCache.ContainsKey(ext))
         {
-            if (iconCache.Count() > maxCache)
-            {
-                foreach (var item in iconCache)
-                {
-                    item.Value.Dispose();
-                }
-                iconCache.Clear();
-            }
+            //if (iconCache.Count() > maxCache)
+            //{
+            //    foreach (var item in iconCache)
+            //    {
+            //        item.Value.Dispose();
+            //    }
+            //    iconCache.Clear();
+            //}
 
-            iconCache.Add(ext, icon);
+            iconCache.TryAdd(ext, icon);
         }
     }
 
@@ -142,12 +143,12 @@ public static class FileIconService
         return iconCache.TryGetValue(ext, out icon);       
     }
 
-    static Dictionary<string , Bitmap> iconCache=new Dictionary<string , Bitmap>(64);
+    static ConcurrentDictionary<string , Bitmap> iconCache=new ConcurrentDictionary<string , Bitmap>();
 
 
     private static readonly RecyclableMemoryStreamManager
                 recyclableMemoryStreamManager =
-                new RecyclableMemoryStreamManager(new RecyclableMemoryStreamManager.Options(2048, 2048,4096, 2048 * 500, 2048 * 500));
+                new RecyclableMemoryStreamManager(/*new RecyclableMemoryStreamManager.Options(2048, 2048,4096, 2048 * 500, 2048 * 500)*/);
     private static Bitmap? ConvertToAvaloniaBitmap(System.Drawing.Bitmap systemBitmap)
     {
         int targetSize = 32;
