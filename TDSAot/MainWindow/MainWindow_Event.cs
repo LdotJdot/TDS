@@ -25,7 +25,7 @@ namespace TDSAot
         string bufferedText_prev = string.Empty;
         string bufferedText = string.Empty;
         private void GoSearch()
-        {
+        {       
             if (string.IsNullOrWhiteSpace(bufferedText))
             {
                 words = [];

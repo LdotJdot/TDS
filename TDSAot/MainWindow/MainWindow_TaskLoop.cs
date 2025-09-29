@@ -248,6 +248,10 @@ namespace TDSAot
 
                                 if (resultNum < 50)//提前显示
                                 {
+                                    if (resultNum == 1)
+                                    {
+                                        Debug.WriteLine(f.fileReferenceNumber.ToString());
+                                    }
                                     resultNumGlobal = resultNum;
                                     UpdateList(false);  //必须异步BeginInvoke，不然不同步
                                 }

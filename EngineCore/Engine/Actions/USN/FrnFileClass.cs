@@ -132,8 +132,8 @@ namespace TDSNET.Engine.Actions.USN
                             files.Remove(f.FileReferenceNumber);
                         }
                     }
-                    usnStates = newUsnState;   //更新状态
                 }
+                usnStates = newUsnState;   //更新状态
             }
         }
 
