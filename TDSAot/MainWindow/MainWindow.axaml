@@ -69,7 +69,7 @@
 						<!-- 正确的 ItemsPanel 配置 -->
 						<ListBox.ItemsPanel>
 							<ItemsPanelTemplate>
-								<VirtualizingStackPanel />
+								<VirtualizingStackPanel CacheLength="1" />
 							</ItemsPanelTemplate>
 						</ListBox.ItemsPanel>
 
