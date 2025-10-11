@@ -63,6 +63,8 @@
 								<MenuItem Header="Copy path (Ctrl+P)" Click="CopyPath"/>
 								<MenuItem Header="Delete (Del)" Click="Delete"/>
 								<MenuItem Header="Property... (Alt+Enter)" Click="ShowProperty"/>
+								<Separator/>
+								<MenuItem Header="Option..." Click="ShowDialog_Option"/>
 							</ContextMenu>
 						</ListBox.ContextMenu>
 

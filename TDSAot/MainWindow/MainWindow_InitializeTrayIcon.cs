@@ -34,10 +34,7 @@ namespace TDSAot
             showItem.Click += (s, e) => ShowWindow();
 
             var option = new NativeMenuItem("Options...");
-            option.Click += (s, e) =>
-            {
-                ShowDialog_Option();
-            };
+            option.Click += (s, e) =>ShowDialog_Option();
 
             var reset = new NativeMenuItem("Reindex");
             reset.Click += (s, e) =>
