@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Interactivity;
 using System;
 using TDS;
 using TDSAot.State;
@@ -11,6 +12,11 @@ namespace TDSAot
     {
         internal bool isOptionWinOpen = false;
         SettingWindow optionWindow;
+
+        void ShowDialog_Option(object? sender, RoutedEventArgs args)
+        {
+            ShowDialog_Option();
+        }
 
         void ShowDialog_Option()
         {

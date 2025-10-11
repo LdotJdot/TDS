@@ -19,8 +19,8 @@ namespace TDSAot.State
         private bool hideAfterStarted = false;
         private bool usingCache = true;
         private bool autoHide = true;
-        private bool alwaysTop = true;
-        private bool autoAdjust = true;
+        private bool alwaysTop = false;
+        private bool autoAdjust = false;
 
         private ThemeType theme;
 
@@ -95,7 +95,7 @@ namespace TDSAot.State
                     var alwaystop = configuration.GetBool(nameof(AlwaysTop));
                     if (alwaystop == null)
                     {
-                        alwaystop = true;
+                        alwaystop = false;
                         configuration.Set(nameof(AlwaysTop), alwaystop);
                         configuration.Save();
                     }
@@ -104,7 +104,7 @@ namespace TDSAot.State
                     var autoadjust = configuration.GetBool(nameof(AutoAdjust));
                     if (autoadjust == null)
                     {
-                        autoadjust = true;
+                        autoadjust = false;
                         configuration.Set(nameof(AutoAdjust), autoadjust);
                         configuration.Save();
                     }
@@ -145,7 +145,7 @@ namespace TDSAot.State
             HideAfterStarted = false;
             UsingCache = true;
             AutoHide = true;
-            AlwaysTop = true;
+            AlwaysTop = false;
             AutoAdjust = false;
             Theme = ThemeType.Default;
             configuration.Save(CurrentOptionPath);

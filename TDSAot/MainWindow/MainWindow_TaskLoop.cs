@@ -51,6 +51,7 @@ namespace TDSAot
                 runningState.Threadrest = false;  //重启标签
 
                 string threadKeyword = keyword;
+                if (string.IsNullOrEmpty(threadKeyword)) continue;  //过滤第一次触发时的刷新
 
                 string[] driverNames = null;
 
