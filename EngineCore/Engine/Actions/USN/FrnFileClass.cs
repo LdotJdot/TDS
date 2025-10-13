@@ -84,7 +84,7 @@ namespace TDSNET.Engine.Actions.USN
         /// <summary>
         /// 掩码
         /// </summary>
-        private uint reasonMask = Win32Api.USN_REASON_FILE_CREATE | Win32Api.USN_REASON_FILE_DELETE | Win32Api.USN_REASON_RENAME_NEW_NAME;
+        private uint reasonMask = Win32Api.USN_REASON_FILE_CREATE | Win32Api.USN_REASON_FILE_DELETE | Win32Api.USN_REASON_RENAME_NEW_NAME | Win32Api.USN_REASON_OBJECT_ID_CHANGE;
 
         public void DoWhileFileChanges()  //筛选USN状态改变
         {
@@ -95,18 +95,39 @@ namespace TDSNET.Engine.Actions.USN
                 for (int i = 0; i < usnEntries.Count; i++)
                 {
                     var f = usnEntries[i];
+         
+                    if (f.Reason== Win32Api.USN_REASON_OBJECT_ID_CHANGE)
+                    {
+                        // means referenceNumber changed.
+                        if (files.ContainsKey(f.FileReferenceNumber))
+                        {
+                            files.Remove(f.FileReferenceNumber);
+                        }
+                        continue;
+                    }
+                    
                     uint value = f.Reason & Win32Api.USN_REASON_RENAME_NEW_NAME;
 
                     if (0 != value && files.Count > 0)
                     {
-                        if (files.ContainsKey(f.FileReferenceNumber) && files.ContainsKey(f.ParentFileReferenceNumber))
+                   
+                        if (files.ContainsKey(f.ParentFileReferenceNumber))
                         {
-                            GetNACNNameAndIndex(f.Name, out var nacnName, out var index);
-                            
-                            FrnFileOrigin frn = files[f.FileReferenceNumber];              
-                             frn.innerFileName = nacnName;
-                             frn.keyindex = index;
-                            files[f.FileReferenceNumber] = frn;
+                            if (files.TryGetValue(f.FileReferenceNumber, out var frn))
+                            {
+                                GetNACNNameAndIndex(f.Name, out var nacnName, out var index);
+                                frn.innerFileName = nacnName;
+                                frn.keyindex = index;
+                            }
+                            else
+                            {
+                                GetNACNNameAndIndex(f.Name, out var nacnName, out var index);
+                                var frnNew = FrnFileOrigin.Create(nacnName, f.FileReferenceNumber, f.ParentFileReferenceNumber);
+                                frnNew.innerFileName = nacnName;
+                                frnNew.keyindex = index;
+                                frnNew.parentFrn = files[f.ParentFileReferenceNumber];
+                                files[frnNew.fileReferenceNumber] = frnNew;
+                            }
                         }
                     }
 
