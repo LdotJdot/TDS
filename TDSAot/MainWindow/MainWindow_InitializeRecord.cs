@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Threading;
 using System;
 using System.IO;
 using System.Linq;
@@ -50,6 +51,8 @@ namespace TDSAot
             {
                 MessageData.Message = $"{this.Items.DisplayCount} items";
             }
+            Dispatcher.UIThread.Invoke(scrollView.ScrollToHome);
+
         }
 
         private void ReadRecords()
