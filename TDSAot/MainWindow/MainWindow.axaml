@@ -44,7 +44,7 @@
 
 			<!-- 底部自适应区域 -->
 			<Grid DockPanel.Dock="Bottom">
-				<ScrollViewer HorizontalScrollBarVisibility="Auto"
+				<ScrollViewer x:Name="scrollView" HorizontalScrollBarVisibility="Auto"
 							 VerticalScrollBarVisibility="Auto">
 
 					<ListBox x:Name="fileListBox" ItemsSource="{Binding Items.DisplayedData, Mode=OneWay}" Background="Transparent"

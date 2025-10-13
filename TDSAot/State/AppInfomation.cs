@@ -10,7 +10,7 @@ namespace TDS.State
     {
         public const string AboutTitle = "About TDS";
         public const string AboutInfo =
-                "v2025.1.1.10 (c) 2018-2025\r\n"+
+                "v2025.1.1.11 (c) 2018-2025\r\n"+
                 "\r\n"+
                 "Sample:\r\n"+
                 "List all the files with the name contains \"log\" and ended with \".json\" in the folder \"App\" from disks \"c:\" and \"d:\"\r\n" +
