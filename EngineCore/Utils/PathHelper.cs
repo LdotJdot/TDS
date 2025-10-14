@@ -33,7 +33,11 @@ namespace TDSNET.Utils
 
             if (fileInfo.Exists)
             {
-               return $"{FormatBytes(fileInfo.Length)}  {fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")}";
+#if DEBUG
+                return $"{FormatBytes(fileInfo.Length)}  {fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")} {f.fileReferenceNumber} {f.parentFileReferenceNumber}";
+#else
+                return $"{FormatBytes(fileInfo.Length)}  {fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")}";
+#endif
             }
             else
             {
