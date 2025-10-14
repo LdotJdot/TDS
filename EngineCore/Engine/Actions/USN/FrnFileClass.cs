@@ -117,6 +117,7 @@ namespace TDSNET.Engine.Actions.USN
                             {
                                 GetNACNNameAndIndex(f.Name, out var nacnName, out var index);
                                 frn.innerFileName = nacnName;
+                                frn.parentFileReferenceNumber = f.ParentFileReferenceNumber;
                                 frn.keyindex = index;
                             }
                             else
