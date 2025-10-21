@@ -40,7 +40,7 @@ namespace TDSAot
         {
             Option = new AppOption();
 
-            if (!Option.HideAfterStarted) ShowWindow();
+            if (!Option.HideAfterStarted && !AppOption.ForceHideAfterStarted) ShowWindow();
             this.Topmost = Option.AlwaysTop;
 #if DEBUG
            // return;

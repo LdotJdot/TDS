@@ -1,13 +1,17 @@
 ﻿using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
 using ConfigurationReader;
+using System;
 using System.IO;
+using System.Reflection;
 
 namespace TDSAot.State
 {
     internal class AppOption
     {
         internal static readonly string CurrentFolder = Directory.GetCurrentDirectory();
+        internal static readonly string CurrentFileName = AppDomain.CurrentDomain.FriendlyName;
+
         internal static readonly string CurrentRecordPath = CurrentFolder + "\\Record.cah";
         internal static readonly string CurrentOptionPath = CurrentFolder + "\\conf.json";
         internal static readonly string CurrentCachePath = CurrentFolder + "\\cache.data";
@@ -21,6 +25,7 @@ namespace TDSAot.State
         private bool autoHide = true;
         private bool alwaysTop = false;
         private bool autoAdjust = false;
+        internal static bool ForceHideAfterStarted = false;
 
         private ThemeType theme;
 

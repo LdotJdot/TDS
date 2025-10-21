@@ -4,6 +4,7 @@ using Microsoft.Win32;
 using System;
 using TDS;
 using TDS.State;
+using TDS.Utils;
 using TDSAot.Utils;
 
 namespace TDSAot
@@ -46,6 +47,25 @@ namespace TDSAot
             var about = new NativeMenuItem("About...");
             about.Click += (s, e) => Message.ShowWaringOk(AppInfomation.AboutTitle, AppInfomation.AboutInfo);
 
+            var autoStartItem = new NativeMenuItem(
+                StartUpUtils.IsStartUp?
+                "Disable run at Windows startup":
+                "Enable run at Windows startup"
+                );
+            autoStartItem.Click += (s, e) => {
+       
+                StartUpUtils.SwitchStartUp();
+                if (StartUpUtils.IsStartUp)
+                {
+                    autoStartItem.Header = "Disable run at Windows startup";
+                }
+                else
+                {
+                    autoStartItem.Header = "Enable run at Windows startup";
+                }
+
+            };
+
             var exitItem = new NativeMenuItem("Exit");
             exitItem.Click += (s, e) => Exit();
 
@@ -53,35 +73,23 @@ namespace TDSAot
             menu.Add(option);
             menu.Add(reset);
             menu.Add(about);
+            menu.Add(autoStartItem);
             menu.Add(exitItem);
 
             _trayIcon.Menu = menu;
+                      
 
             // 单击事件
-            _trayIcon.Clicked += (s, e) => ShowWindow();
+            _trayIcon.Clicked += (s, e) =>
+            {
+               
+                ShowWindow();
+            };
 
             // 确保TrayIcon可见
             _trayIcon.IsVisible = true;
+
         }
 
-        private void RegisterInStartup(bool isChecked)
-        {
-            // 不起作用
-            var path = Environment.ProcessPath;
-            if(Message.ShowYesNo("开机自启动", "是否需要?"))
-            {
-                RegistryKey? registryKey = Registry.CurrentUser.OpenSubKey
-                        ("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-                if (isChecked)
-                {
-
-                    registryKey?.SetValue("ApplicationName", Environment.ProcessPath);
-                }
-                else
-                {
-                    registryKey?.DeleteValue("ApplicationName");
-                }
-            }
-        }
     }
 }

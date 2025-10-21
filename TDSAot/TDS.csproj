@@ -6,7 +6,9 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
 	  <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
-	  <!--<TrimMode>link</TrimMode>-->
+	  <!--<TrimMode>link</TrimMode>-->	
+<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+
 
 	  <PackageIcon>tds32-32.ico</PackageIcon>
 	  <Platforms>AnyCPU;x64;x86</Platforms>
@@ -41,6 +43,7 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.9" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
