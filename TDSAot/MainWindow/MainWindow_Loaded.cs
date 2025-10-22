@@ -286,7 +286,7 @@ namespace TDSAot
                             FileSys.GetNACNNameAndIndex(f.innerFileName, out var nacnName, out var index, SpellDict);
 
                             f.keyindex = index;
-                            f.innerFileName = nacnName;
+                            f.SetInnerFileName(nacnName);
                         }
 
                         HashSet<FrnFileOrigin> first = new HashSet<FrnFileOrigin>();
@@ -311,6 +311,8 @@ namespace TDSAot
                 }
 
                 Task.WaitAll(tasks);
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
         }
     }
