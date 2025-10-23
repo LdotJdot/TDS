@@ -43,7 +43,7 @@ namespace TDSAot
             if (!Option.HideAfterStarted && !AppOption.ForceHideAfterStarted) ShowWindow();
             this.Topmost = Option.AlwaysTop;
             Items.SetLanguage(LangManager.Instance.SetLang(Option.Lang));
-            RefreshTrayIconMenu();
+            RefreshUILanguage();
 #if DEBUG
            //return;
 #endif

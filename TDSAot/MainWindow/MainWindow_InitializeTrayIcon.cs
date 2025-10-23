@@ -91,7 +91,7 @@ namespace TDSAot
             _trayIcon.IsVisible = true;
         }
 
-        public void RefreshTrayIconMenu()
+        public void RefreshUILanguage()
         {
             ((NativeMenuItem)_trayIcon.Menu.Items[0]).Header = LangManager.Instance.CurrentLang.ShowWindow;
             ((NativeMenuItem)_trayIcon.Menu.Items[1]).Header = LangManager.Instance.CurrentLang.Option;
@@ -101,6 +101,7 @@ namespace TDSAot
                 LangManager.Instance.CurrentLang.DisableStartup:
                 LangManager.Instance.CurrentLang.EnableStartup;
             ((NativeMenuItem)_trayIcon.Menu.Items[5]).Header = LangManager.Instance.CurrentLang.Exit;
+            inputBox.Watermark = LangManager.Instance.CurrentLang.InputWaterMarkInput;
         }
 
     }

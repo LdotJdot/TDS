@@ -90,7 +90,7 @@ public partial class SettingWindow : Window
     {
         mainWindow.Option.Lang = svm.Lang.ReadableName;
         mainWindow.Items.SetLanguage(svm.Lang);
-        mainWindow.RefreshTrayIconMenu();
+        mainWindow.RefreshUILanguage();
 
     }
     internal void ChangeTheme(SettingsViewModel svm)
