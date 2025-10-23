@@ -18,24 +18,30 @@ namespace TDS.Utils
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("000214F9-0000-0000-C000-000000000046")]
     internal interface IShellLinkW
-    {       
-
-        public void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
-
-       
-        public void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
-
-     
-        public void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string pszIconPath, int iIcon);
-
-       
-        public void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
+    {
+        void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cchMaxPath, IntPtr pfd, short fFlags);
+        void GetIDList(out IntPtr ppidl);
+        void SetIDList(IntPtr pidl);
+        void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszName, int cchMaxName);
+        void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string pszName);
+        void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszDir, int cchMaxPath);
+        void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
+        void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszArgs, int cchMaxPath);
+        void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
+        void GetHotkey(out short pwHotkey);
+        void SetHotkey(short wHotkey);
+        void GetShowCmd(out int piShowCmd);
+        void SetShowCmd(int iShowCmd);
+        void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIconPath, int cchIconPath, out int piIcon);
+        void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string pszIconPath, int iIcon);
+        void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string pszPathRel, int dwReserved);
+        void Resolve(IntPtr hwnd, int fFlags);
+        void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
     }
 
-    // CLSID_ShellLink from ShlGuid.h
     [ComImport]
     [Guid("00021401-0000-0000-C000-000000000046")]
-    public class ShellLink;
+    public class ShellLink { };
 
     public class StartUpUtils
     {
@@ -56,7 +62,7 @@ namespace TDS.Utils
                     StartUp();
                     Message.ShowWaringOk("Success", "Auto startup added.");
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Message.ShowWaringOk("Failed", "Failed to add to startup folder.");
                 }
@@ -66,17 +72,17 @@ namespace TDS.Utils
         private static void StartUp()
         {
 
-                var path = StartPath;
-                var appPath = Path.Combine(AppOption.CurrentFolder, AppOption.CurrentFileName);
-                RemoveStartUp();
+            var path = StartPath;
+            var appPath = Path.Combine(AppOption.CurrentFolder, AppOption.CurrentFileName);
+            RemoveStartUp();
 
-                var lnk = (IShellLinkW)new ShellLink();
+            var lnk = (IShellLinkW)new ShellLink();
 
-                lnk.SetPath(appPath);
-                lnk.SetArguments("/hide"); // silent
-                lnk.SetWorkingDirectory(AppOption.CurrentFolder);
-                ((IPersistFile)lnk).Save(path, false);
-        
+            lnk.SetPath(appPath);
+            lnk.SetArguments("/hide"); // silent
+            lnk.SetWorkingDirectory(AppOption.CurrentFolder);
+            ((IPersistFile)lnk).Save(path, false);
+
         }
 
         private static void RemoveStartUp()
