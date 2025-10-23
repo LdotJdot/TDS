@@ -1,8 +1,8 @@
 # TDS - The Ultimate Windows File Finder
 # TDS - 便捷的 Windows 文件查找工具
 
-[2025.1.1.12] Welcome to TDS, your go-to tool for lightning-fast file searches on Windows systems.
-[2025.1.1.12] 欢迎使用 TDS，您在 Windows 系统上进行极速文件搜索的首选工具。
+[2025.1.1.13] Welcome to TDS, your go-to tool for lightning-fast file searches on Windows systems.
+[2025.1.1.13] 欢迎使用 TDS，您在 Windows 系统上进行极速文件搜索的首选工具。
 
 (Tip:Support Pinyin Initial Abbreviation Translation. The interface language can be set to English.)
 （提示：支持拼音首字母缩写翻译。软件界面使用语言可选择中文-简体）
