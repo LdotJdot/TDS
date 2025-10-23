@@ -29,11 +29,13 @@ namespace TDSAot
 
         public MainWindow()
         {
+#if !DEBUG
             if (!ApplicationSingleton.Check())
             {
                 Message.ShowWaringOk("Program already running", "Another instance of the program is already running. Check the right corner of your desktop.");
                 Exit();
             }
+#endif
             CheckRunningAsAdministrator();
             InitializeComponent();
             InitializeTrayIcon();

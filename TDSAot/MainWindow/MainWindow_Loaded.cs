@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TDS.Globalization;
 using TDSAot.State;
 using TDSAot.Utils;
 using TDSNET.Engine.Actions.USN;
@@ -39,9 +40,10 @@ namespace TDSAot
         private void Reset()
         {
             Option = new AppOption();
-
-            if (!Option.HideAfterStarted) ShowWindow();
+            if (!Option.HideAfterStarted && !AppOption.ForceHideAfterStarted) ShowWindow();
             this.Topmost = Option.AlwaysTop;
+            Items.SetLanguage(LangManager.Instance.SetLang(Option.Lang));
+            RefreshTrayIconMenu();
 #if DEBUG
            // return;
 #endif
@@ -130,7 +132,7 @@ namespace TDSAot
                 {
                     exit.IsEnabled = true;
                 }
-                inputBox.Watermark = "Please input keywords";
+                inputBox.Watermark = LangManager.Instance.CurrentLang.InputWaterMarkInput;
                 inputBox.IsEnabled = true;
                 fileListBox.IsEnabled = true;
                 inputBox.Focus();
@@ -154,7 +156,7 @@ namespace TDSAot
                 {
                     exit.IsEnabled = false;
                 }
-                inputBox.Watermark = "Initialization pending...";
+                inputBox.Watermark = LangManager.Instance.CurrentLang.InputWaterMarkPending;
                 inputBox.IsEnabled = false;
                 fileListBox.IsEnabled = false;
             });
@@ -164,7 +166,7 @@ namespace TDSAot
         {
             try
             {
-                MessageData.Message = ("Loading...");
+                MessageData.Message = LangManager.Instance.CurrentLang.Loading;
 
                 var result = cache.TryLoadFromDisk();
 
@@ -248,7 +250,7 @@ namespace TDSAot
                 Task[] tasks = new Task[fileSysList.Count];
 
 
-                MessageData.Message = ("Indexing " + string.Join(",", fileSysList.Select(o => o.driveInfoData.Name)));
+                MessageData.Message = (LangManager.Instance.CurrentLang.Indexing + string.Join(",", fileSysList.Select(o => o.driveInfoData.Name)));
 
                 for (int i = 0; i < fileSysList.Count; i++)
                 {
@@ -286,7 +288,7 @@ namespace TDSAot
                             FileSys.GetNACNNameAndIndex(f.innerFileName, out var nacnName, out var index, SpellDict);
 
                             f.keyindex = index;
-                            f.innerFileName = nacnName;
+                            f.SetInnerFileName(nacnName);
                         }
 
                         HashSet<FrnFileOrigin> first = new HashSet<FrnFileOrigin>();
@@ -311,6 +313,8 @@ namespace TDSAot
                 }
 
                 Task.WaitAll(tasks);
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
         }
     }

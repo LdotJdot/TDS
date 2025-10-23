@@ -3,6 +3,7 @@ using EngineCore.Engine.Actions.USN;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using TDSNET.Engine.Utils;
 using TDSNET.Utils;
 
@@ -16,18 +17,16 @@ namespace TDSNET.Engine.Actions.USN
         public ulong fileReferenceNumber;
         public ulong parentFileReferenceNumber;
 
-
-        public Bitmap? icon => FileIconService.GetIcon(FilePath);
-        public string innerFileName = "";
         public FrnFileOrigin parentFrn = null;
+        public Bitmap? icon => FileIconService.GetIcon(FilePath);
+
+        public string innerFileName { get; private set; } = "";
 
         public string FileName => PathHelper.getfileName(innerFileName).ToString();
+
         public string FilePath => PathHelper.GetPath(this).ToString();
 
         public string FileInfo=> PathHelper.getFileInfoStr(this);
-
-
-
 
 
         public static FrnFileOrigin Create(string filename, ulong fileRefNum, ulong parentFileRefNum)
@@ -39,9 +38,14 @@ namespace TDSNET.Engine.Actions.USN
             return f;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetInnerFileName(string filename)
+        {
+            innerFileName = string.IsInterned(filename) ?? filename;
+        }
         private FrnFileOrigin(string filename, ulong fileRefNum)
         {
-            innerFileName = filename;
+            innerFileName = string.IsInterned(filename) ?? filename;
             fileReferenceNumber = fileRefNum;
         }
 
@@ -60,8 +64,8 @@ namespace TDSNET.Engine.Actions.USN
         }
 
         public void Compress()
-        {           
-            files.TrimExcess();
+        {
+            files.TrimExcess((int)(files.Count() * 1.2));
         }
 
         /// <summary>
@@ -116,7 +120,7 @@ namespace TDSNET.Engine.Actions.USN
                             if (files.TryGetValue(f.FileReferenceNumber, out var frn))
                             {
                                 GetNACNNameAndIndex(f.Name, out var nacnName, out var index);
-                                frn.innerFileName = nacnName;
+                                frn.SetInnerFileName(nacnName);
                                 frn.parentFileReferenceNumber = f.ParentFileReferenceNumber;
                                 frn.parentFrn= files[f.ParentFileReferenceNumber];
                                 frn.keyindex = index;
@@ -125,7 +129,7 @@ namespace TDSNET.Engine.Actions.USN
                             {
                                 GetNACNNameAndIndex(f.Name, out var nacnName, out var index);
                                 var frnNew = FrnFileOrigin.Create(nacnName, f.FileReferenceNumber, f.ParentFileReferenceNumber);
-                                frnNew.innerFileName = nacnName;
+                                frnNew.SetInnerFileName(nacnName);
                                 frnNew.keyindex = index;
                                 frnNew.parentFrn = files[f.ParentFileReferenceNumber];
                                 files[frnNew.fileReferenceNumber] = frnNew;

@@ -1,6 +1,7 @@
 ﻿using ReactiveUI;
 using System.Collections.Generic;
 using System.Linq;
+using TDS.Globalization;
 using TDSNET.Engine.Actions.USN;
 
 namespace TDSAot.ViewModels
@@ -11,6 +12,19 @@ namespace TDSAot.ViewModels
         private IList<FrnFileOrigin> _allData = [];
         private IEnumerable<FrnFileOrigin> _displayedData = [];
         private int _displayCount = 100;
+        private ILanguage _lang = LangManager.Instance.CurrentLang;
+
+        public ILanguage Lang
+        {
+            get => _lang;
+            private set => this.RaiseAndSetIfChanged(ref _lang, value);
+        }
+
+        public void SetLanguage(ILanguage lang)
+        {
+            Lang = lang;
+        }
+
 
         public IEnumerable<FrnFileOrigin> DisplayedData
         {

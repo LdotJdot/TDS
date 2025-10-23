@@ -1,13 +1,18 @@
 ﻿using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
 using ConfigurationReader;
+using System;
 using System.IO;
+using System.Reflection;
+using TDS.Globalization;
 
 namespace TDSAot.State
 {
     internal class AppOption
     {
         internal static readonly string CurrentFolder = Directory.GetCurrentDirectory();
+        internal static readonly string CurrentFileName = AppDomain.CurrentDomain.FriendlyName;
+
         internal static readonly string CurrentRecordPath = CurrentFolder + "\\Record.cah";
         internal static readonly string CurrentOptionPath = CurrentFolder + "\\conf.json";
         internal static readonly string CurrentCachePath = CurrentFolder + "\\cache.data";
@@ -21,6 +26,9 @@ namespace TDSAot.State
         private bool autoHide = true;
         private bool alwaysTop = false;
         private bool autoAdjust = false;
+        const string DefaultLang = "中文";
+        private string lang = DefaultLang;
+        internal static bool ForceHideAfterStarted = false;
 
         private ThemeType theme;
 
@@ -120,6 +128,15 @@ namespace TDSAot.State
                     }
                     else Theme = (ThemeType)theme.Value;
 
+                    var lang = configuration.GetString(nameof(Lang));
+                    if (lang == null)
+                    {
+                        lang = DefaultLang;
+                        configuration.Set(nameof(Lang), lang);
+                        configuration.Save();
+                    }
+                    else Lang = lang;
+
                     return;
                 }
                 catch
@@ -147,6 +164,7 @@ namespace TDSAot.State
             AutoHide = true;
             AlwaysTop = false;
             AutoAdjust = false;
+            Lang = DefaultLang;
             Theme = ThemeType.Default;
             configuration.Save(CurrentOptionPath);
         }
@@ -161,7 +179,8 @@ namespace TDSAot.State
         {
             get => theme; set
             {
-                theme = value; configuration?.Set(nameof(Theme), (int)theme);
+                theme = value; 
+                configuration?.Set(nameof(Theme), (int)theme);
                 if (Avalonia.Application.Current != null)
                 {
                     Avalonia.Application.Current.RequestedThemeVariant = GetTheme(theme);
@@ -182,6 +201,7 @@ namespace TDSAot.State
         internal bool AutoHide { get => autoHide; set { autoHide = value; configuration?.Set(nameof(AutoHide), autoHide); } }
         internal bool AlwaysTop { get => alwaysTop; set { alwaysTop = value; configuration?.Set(nameof(AlwaysTop), alwaysTop); } }
         internal bool AutoAdjust { get => autoAdjust; set { autoAdjust = value; configuration?.Set(nameof(AutoAdjust), autoAdjust); } }
+        internal string Lang { get => lang; set { lang = value; configuration?.Set(nameof(Lang), lang); } }
 
 
     }

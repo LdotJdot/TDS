@@ -15,6 +15,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using TDS.Globalization;
 using TDSAot.Utils;
 using TDSNET.Engine.Actions.USN;
 
@@ -101,7 +102,7 @@ namespace TDSAot
                     }
                     catch (Exception ex)
                     {
-                        Message.ShowWaringOk("Error",$"Caching failed:{ex.Message}");
+                        Message.ShowWaringOk(LangManager.Instance.CurrentLang.Error,$"{LangManager.Instance.CurrentLang.Error_CachingFailed}:{ex.Message}");
                     }
                 }
             }

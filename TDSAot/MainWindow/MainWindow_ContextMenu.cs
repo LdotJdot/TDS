@@ -2,8 +2,12 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using HarfBuzzSharp;
 using System.Linq;
+using System.Threading;
+using TDS.Globalization;
 using TDSAot.State;
 using TDSAot.Utils;
 using TDSNET.Engine.Actions.USN;
@@ -27,7 +31,7 @@ namespace TDSAot
 
         private void OpenFile(object sender, RoutedEventArgs e)
         {
-           Execute(GetSelectedItems(), FileActionType.Open);
+            Execute(GetSelectedItems(), FileActionType.Open);
         }
 
         private void OpenFileWith(object sender, RoutedEventArgs e)
