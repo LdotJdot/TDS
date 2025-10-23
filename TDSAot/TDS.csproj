@@ -13,7 +13,7 @@
 	  <PackageIcon>tds32-32.ico</PackageIcon>
 	  <Platforms>AnyCPU;x64;x86</Platforms>
 	  <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-	  <OptimizationPreference>Speed</OptimizationPreference>
+	  <OptimizationPreference>Size</OptimizationPreference>
 	  <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 	  <!--<PublishAot>true</PublishAot>-->
 	  <TrimMode>full</TrimMode>
@@ -25,6 +25,7 @@
 	  <SelfContained>true</SelfContained>
 	  <ApplicationIcon>tds32-32.ico</ApplicationIcon>
   </PropertyGroup>
+
   <ItemGroup>
     <None Remove="libs_native\av_libglesv2.dll" />
     <None Remove="libs_native\libHarfBuzzSharp.dll" />
@@ -78,6 +79,9 @@
 	  <None Update="Assets\tds32-32.ico">
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
+	  </None>
+	  <None Update="ProxyLibs.dll">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>
 </Project>

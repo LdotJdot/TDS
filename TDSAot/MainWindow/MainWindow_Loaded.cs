@@ -45,7 +45,7 @@ namespace TDSAot
             Items.SetLanguage(LangManager.Instance.SetLang(Option.Lang));
             RefreshTrayIconMenu();
 #if DEBUG
-           // return;
+           return;
 #endif
             RegisterHotKeys();
             state?.Dispose();

@@ -12,39 +12,12 @@ using TDSAot.State;
 using TDSAot.Utils;
 
 namespace TDS.Utils
-{
-
-    [ComImport]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [Guid("000214F9-0000-0000-C000-000000000046")]
-    internal interface IShellLinkW
-    {
-        void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cchMaxPath, IntPtr pfd, short fFlags);
-        void GetIDList(out IntPtr ppidl);
-        void SetIDList(IntPtr pidl);
-        void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszName, int cchMaxName);
-        void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string pszName);
-        void GetWorkingDirectory([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszDir, int cchMaxPath);
-        void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
-        void GetArguments([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszArgs, int cchMaxPath);
-        void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
-        void GetHotkey(out short pwHotkey);
-        void SetHotkey(short wHotkey);
-        void GetShowCmd(out int piShowCmd);
-        void SetShowCmd(int iShowCmd);
-        void GetIconLocation([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIconPath, int cchIconPath, out int piIcon);
-        void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string pszIconPath, int iIcon);
-        void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string pszPathRel, int dwReserved);
-        void Resolve(IntPtr hwnd, int fFlags);
-        void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
-    }
-
-    [ComImport]
-    [Guid("00021401-0000-0000-C000-000000000046")]
-    public class ShellLink { };
-
+{  
     public class StartUpUtils
     {
+        [DllImport("ProxyLibs.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]//ansi统一
+        private static extern int CreateLink(string targetPath, string path, string arg, string workDir);
+
         static string StartPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), Path.ChangeExtension(AppOption.CurrentFileName, ".lnk"));
         public static bool IsStartUp => File.Exists(StartPath);
 
@@ -76,14 +49,12 @@ namespace TDS.Utils
             var appPath = Path.Combine(AppOption.CurrentFolder, AppOption.CurrentFileName);
             RemoveStartUp();
 
-            var lnk = (IShellLinkW)new ShellLink();
-
-            lnk.SetPath(appPath);
-            lnk.SetArguments("/hide"); // silent
-            lnk.SetWorkingDirectory(AppOption.CurrentFolder);
-            ((IPersistFile)lnk).Save(path, false);
-
-        }
+            var ptrTargetPath=Marshal.StringToHGlobalUni(path);
+            var ptrSourcePath=Marshal.StringToHGlobalUni(appPath);
+            var ptrArg=Marshal.StringToHGlobalUni("/hide");
+            var ptrWorkDir = Marshal.StringToHGlobalUni(AppOption.CurrentFolder);
+            var inpt=CreateLink(path, appPath, "/hide", AppOption.CurrentFolder);
+         }
 
         private static void RemoveStartUp()
         {
