@@ -92,9 +92,9 @@
 							<RowDefinition Height="Auto" />
 						</Grid.RowDefinitions>
 
-						<TextBlock Text="Default Result Count:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,0,8,0" >
+						<TextBlock Text="{Binding Lang.DefaultResultCount, Mode=OneWay}" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,0,8,0" >
 							<ToolTip.Tip>
-								<TextBlock Text="Add /a keyword during search to force list all results"/>
+								<TextBlock Text="{Binding Lang.DefaultResultCountTip, Mode=OneWay}"/>
 							</ToolTip.Tip>
 						</TextBlock>
 						<!-- Using custom NumericTextBox instead of NumericUpDown -->
@@ -106,16 +106,16 @@
                                  Margin="0 2 0 0"
                                  Watermark="1-1000"
                                  />
-						<TextBlock Text="Set the maximum number of result entries to display during search" Classes="setting-description"
+						<TextBlock Text="{Binding Lang.DefaultResultCountDesc, Mode=OneWay}" Classes="setting-description"
                                  Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" />
 					</Grid>
 				</StackPanel>
 
 				<!-- Hotkey Settings -->
 				<StackPanel Classes="setting-group">
-					<TextBlock Text="Hotkey Settings" Classes="setting-title">
+					<TextBlock Text="{Binding Lang.HotkeySetting, Mode=OneWay}" Classes="setting-title">
 						<ToolTip.Tip>
-							<TextBlock Text="Default keys: ESC to return to input box, Space to open directory, Enter to open current item"/>
+							<TextBlock Text="{Binding Lang.HotkeySettingDesc, Mode=OneWay}"/>
 						</ToolTip.Tip>
 					</TextBlock>
 
@@ -130,7 +130,7 @@
 							<RowDefinition Height="Auto" />
 						</Grid.RowDefinitions>
 
-						<TextBlock Text="Activation Hotkey:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,0,8,0" />
+						<TextBlock Text="{Binding Lang.ActivateHotkeySetting, Mode=OneWay}" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,0,8,0" />
 						<ComboBox SelectedItem="{Binding HotKey}" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left">
 							<ComboBox.Items>
 								<x:String>F1</x:String>
@@ -169,7 +169,7 @@
 							</ComboBox.Items>
 						</ComboBox>
 
-						<TextBlock Text="Modifier Key:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1" Margin="0,6,8,0" />
+						<TextBlock Text="{Binding Lang.ModifyHotkeySetting, Mode=OneWay}" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1" Margin="0,6,8,0" />
 						<ComboBox  SelectedItem="{Binding ModifierKey}" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" Margin="0,6,0,0">
 							<ComboBox.Items>
 								<x:String>Ctrl</x:String>
@@ -180,29 +180,29 @@
 
 						</ComboBox>
 
-						<TextBlock Text="Set the hotkey combination to activate the application window" Classes="setting-description"
+						<TextBlock Text="{Binding Lang.ModifyHotkeySettingDesc, Mode=OneWay}" Classes="setting-description"
                                  Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" />
 					</Grid>
 				</StackPanel>
 
 				<!-- Behavior Settings -->
 				<StackPanel Classes="setting-group">
-					<TextBlock Text="Behavior Settings" Classes="setting-title" />
+					<TextBlock Text="{Binding Lang.BehaviorSettings, Mode=OneWay}" Classes="setting-title" />
 
-					<CheckBox Content="Hide on startup" IsChecked="{Binding HideAfterStarted}" />
-					<TextBlock Text="Automatically hide to the system tray when the app starts" Classes="setting-description" />
+					<CheckBox Content="{Binding Lang.AutoHide, Mode=OneWay}" IsChecked="{Binding HideAfterStarted}" />
+					<TextBlock Text="{Binding Lang.AutoHideDesc, Mode=OneWay}" Classes="setting-description" />
 
-					<CheckBox Content="Always on top" IsChecked="{Binding AlwaysTop}" Margin="0,8,0,0" />
-					<TextBlock Text="Keep the window always on top of others" Classes="setting-description" />
+					<CheckBox Content="{Binding Lang.AlwaysTop, Mode=OneWay}" IsChecked="{Binding AlwaysTop}" Margin="0,8,0,0" />
+					<TextBlock Text="{Binding Lang.AlwaysTopDesc, Mode=OneWay}" Classes="setting-description" />
 
-					<CheckBox Content="Hide on focus loss" IsChecked="{Binding AutoHide}" Margin="0,8,0,0" />
-					<TextBlock Text="Automatically hide the window when it loses focus" Classes="setting-description" />
+					<CheckBox Content="{Binding Lang.HideLostFocus, Mode=OneWay}" IsChecked="{Binding AutoHide}" Margin="0,8,0,0" />
+					<TextBlock Text="{Binding Lang.HideLostFocusDesc, Mode=OneWay}" Classes="setting-description" />
 
-					<CheckBox Content="Auto-resize" IsChecked="{Binding AutoAdjust}" Margin="0,8,0,0" />
-					<TextBlock Text="Auto-adjust the window size based on the number of results" Classes="setting-description" />
+					<CheckBox Content="{Binding Lang.AutoResize, Mode=OneWay}" IsChecked="{Binding AutoAdjust}" Margin="0,8,0,0" />
+					<TextBlock Text="{Binding Lang.AutoResizeDesc, Mode=OneWay}" Classes="setting-description" />
 					
-					<CheckBox Content="Enable disk cache" IsChecked="{Binding UsingCache}" Margin="0,8,0,0" />
-					<TextBlock Text="Use disk cache to speed up application loading process" Classes="setting-description" />
+					<CheckBox Content="{Binding Lang.DiskCache, Mode=OneWay}" IsChecked="{Binding UsingCache}" Margin="0,8,0,0" />
+					<TextBlock Text="{Binding Lang.DiskCacheDesc, Mode=OneWay}" Classes="setting-description" />
 				</StackPanel>
 
 				<!-- Interface Settings -->
@@ -217,18 +217,22 @@
 						<Grid.RowDefinitions>
 							<RowDefinition Height="Auto" />
 							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
 						</Grid.RowDefinitions>
 
-						<TextBlock Text="Interface Theme:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,0,8,0" />
-						<ComboBox Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left"  SelectedItem="{Binding Theme}">
-							<ComboBox.Items>
-								<x:String>Default</x:String>
-								<x:String>Dark</x:String>
-								<x:String>Light</x:String>
-							</ComboBox.Items>
-						</ComboBox>
-						<TextBlock Text="Select the interface theme for the application" Classes="setting-description"
-                                 Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" />
+			
+							<TextBlock Text="{Binding Lang.ModifyHotkeySetting, Mode=OneWay}" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,6,8,0" />
+							<ComboBox SelectedItem="{Binding LangStr}" ItemsSource="{Binding LangStrs}" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" Margin="0,6,0,0" />
+								
+							<TextBlock Text="{Binding Lang.ModifyHotkeySettingDesc, Mode=OneWay}" Classes="setting-description"
+									   Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1"  Margin="0,0,8,16"/>
+
+						<!-- 第二行 -->
+						<TextBlock Text="{Binding Lang.Theme, Mode=OneWay}" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2" Margin="0,0,8,0" />
+						<ComboBox Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" SelectedItem="{Binding Theme}"  ItemsSource="{Binding Themes}" />
+						<TextBlock Text="{Binding Lang.ThemeDesc, Mode=OneWay}" Classes="setting-description"
+								   Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" />
 					</Grid>
 				</StackPanel>
 			</StackPanel>
@@ -236,8 +240,8 @@
 
 		<!-- Button Area -->
 		<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-			<Button Content="Cancel" Width="75" Margin="0,0,8,0" Command="{Binding CancelCommand}" />
-			<Button Content="OK" Width="75" Command="{Binding SaveCommand}" />
+			<Button Content="{Binding Lang.Cancel, Mode=OneWay}" Width="75" Margin="0,0,8,0" Command="{Binding CancelCommand}" />
+			<Button Content="{Binding Lang.Ok, Mode=OneWay}" Width="75" Command="{Binding SaveCommand}" />
 		</StackPanel>
 	</Grid>
 </Window>

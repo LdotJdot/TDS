@@ -3,6 +3,7 @@ using Avalonia.Threading;
 using System;
 using System.IO;
 using System.Linq;
+using TDS.Globalization;
 using TDSAot.State;
 using TDSAot.Utils;
 using TDSAot.ViewModels;
@@ -45,11 +46,11 @@ namespace TDSAot
 
             if (recordsManager.Records.Count <= 1)
             {
-                MessageData.Message = $"{this.Items.DisplayCount} item";
+                MessageData.Message = $"{this.Items.DisplayCount} {LangManager.Instance.CurrentLang.Item}";
             }
             else
             {
-                MessageData.Message = $"{this.Items.DisplayCount} items";
+                MessageData.Message = $"{this.Items.DisplayCount} {LangManager.Instance.CurrentLang.Items}";
             }
             Dispatcher.UIThread.Invoke(scrollView.ScrollToHome);
 

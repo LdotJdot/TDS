@@ -1,13 +1,19 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using DynamicData;
 using System;
+using System.Linq;
+using System.Runtime.Intrinsics.Arm;
 using System.Threading.Tasks;
+using TDS.Globalization;
 using TDSAot;
 using TDSAot.State;
 using TDSAot.Utils;
+using TDSNET.Engine.Actions.USN;
 
 namespace TDS;
 
@@ -22,6 +28,7 @@ public partial class SettingWindow : Window
 
         DataContext = LoadOption();
         this.Closed += SettingWindow_Closed;
+        this.KeyDown += OnAppKeyDown;
 
     }
 
@@ -39,16 +46,23 @@ public partial class SettingWindow : Window
         svm.ModifierKey      = KeyTransfer.ReverseTransKey(mainWindow.Option.ModifierKey);
         svm.UsingCache       = mainWindow.Option.UsingCache;
         svm.HideAfterStarted = mainWindow.Option.HideAfterStarted;
-        svm.Theme            = mainWindow.Option.Theme.ToString();
+        svm.Themes = [LangManager.Instance.CurrentLang.ThemeDefault,LangManager.Instance.CurrentLang.ThemeLight, LangManager.Instance.CurrentLang.ThemeDark];
+        svm.Theme            = GetTheme(mainWindow.Option.Theme);
         svm.AutoHide         = mainWindow.Option.AutoHide;
         svm.AutoAdjust       = mainWindow.Option.AutoAdjust;
         svm.AlwaysTop        = mainWindow.Option.AlwaysTop;
+        
+        svm.Lang = LangManager.Instance.CurrentLang;
+        svm.LangStrs = LangManager.Instance.GetAvailableLangs().Select(o => o.ReadableName);
+        svm.LangStr = svm.Lang.ReadableName;
         return svm;
     }
 
+    
+
     internal void SaveAndExit()
     {
-        var svm=(SettingsViewModel)DataContext!;
+        var svm = (SettingsViewModel)DataContext!;
         if (int.TryParse(svm.Findmax, out var value) && value>0 && value<1000)
         {
             mainWindow.Option.Findmax = value;
@@ -64,17 +78,61 @@ public partial class SettingWindow : Window
         mainWindow.Option.AutoHide         = svm.AutoHide;
         mainWindow.Option.AutoAdjust       = svm.AutoAdjust;
         mainWindow.Option.AlwaysTop        = svm.AlwaysTop;
-               
-        mainWindow.Option.Theme            = Enum.TryParse<ThemeType>(svm.Theme, true, out var theme)?theme: ThemeType.Default;
-
+        ChangeLang(svm);
+        ChangeTheme(svm);
         mainWindow.Option.Save();
         mainWindow.RegisterHotKeys();
         mainWindow.Topmost = mainWindow.Option.AlwaysTop;
         this.Exit();
     }
+
+    internal void ChangeLang(SettingsViewModel svm)
+    {
+        mainWindow.Option.Lang = svm.Lang.ReadableName;
+        mainWindow.Items.SetLanguage(svm.Lang);
+        mainWindow.RefreshTrayIconMenu();
+
+    }
+    internal void ChangeTheme(SettingsViewModel svm)
+    {
+        if(svm.Themes!=null)  mainWindow.Option.Theme = ToTheme(svm.Themes.IndexOf(svm.Theme));
+    }
+
+    ThemeType ToTheme(int theme)
+    {
+        return theme switch
+        {
+            0 => ThemeType.Default,
+            1 => ThemeType.Light,
+            _ => ThemeType.Dark,
+        };
+    }
+    string GetTheme(ThemeType theme)
+    {
+        return theme switch
+        {
+            ThemeType.Default => LangManager.Instance.CurrentLang.ThemeDefault,
+            ThemeType.Light => LangManager.Instance.CurrentLang.ThemeLight,
+            _ => LangManager.Instance.CurrentLang.ThemeDark,
+        };
+    }
+
+
     internal void Exit()
     {
         this.Close();
+    }
+
+    private void OnAppKeyDown(object? sender, KeyEventArgs e)
+    {
+        // 处理按键按下事件
+
+        var key = e.Key;
+        
+        if (key == Key.Escape)
+        {
+            Exit();
+        }
     }
 }
 

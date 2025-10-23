@@ -17,7 +17,7 @@
 	  <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 	  <!--<PublishAot>true</PublishAot>-->
 	  <TrimMode>full</TrimMode>
-	  <InvariantGlobalization>true</InvariantGlobalization>
+	  <InvariantGlobalization>false</InvariantGlobalization>
 	  <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
 	  <IlcOptimizationPreference>Size</IlcOptimizationPreference>
 	  <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>

@@ -1,7 +1,9 @@
 ﻿using Avalonia;
 using ReactiveUI;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Reactive;
+using TDS.Globalization;
 
 namespace TDS
 {
@@ -16,6 +18,37 @@ namespace TDS
             CancelCommand = ReactiveCommand.Create(Cancel);
 
         }
+
+        private ILanguage _lang;
+
+        public ILanguage Lang
+        {
+            get => _lang;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _lang, value);
+            }
+        }
+        private string _langStr;
+        public string LangStr
+        {
+            get => _langStr;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _langStr, value);
+                Lang=LangManager.Instance.SetLang(_langStr);
+                settingWindow.ChangeLang(this);
+            }
+        }
+
+
+        private IEnumerable<string> _langStrs = [];
+        public IEnumerable<string> LangStrs
+        {
+            get => _langStrs;
+            set => this.RaiseAndSetIfChanged(ref _langStrs, value);
+        }
+
 
         string findmax  = "100";
 
@@ -108,11 +141,14 @@ namespace TDS
             get => theme;
             set
             {
-                theme = value;
                 this.RaiseAndSetIfChanged(ref theme, value);
+                settingWindow.ChangeTheme(this);
             }
         }
 
+        public IEnumerable<string> Themes { get; set; }
+
+       
 
         // 命令
 

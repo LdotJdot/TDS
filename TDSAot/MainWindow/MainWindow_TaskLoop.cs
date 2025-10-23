@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TDS.Globalization;
 using TDS.Utils;
 using TDSAot.State;
 using TDSNET.Engine.Actions.USN;
@@ -294,17 +295,17 @@ Restart:;
             {
                 if (Option.Findmax>0 && resultNumGlobal > Option.Findmax && runningState.isAll == false)
                 {
-                     MessageData.Message = $"{Option.Findmax} +item";
+                     MessageData.Message = $"{Option.Findmax} +{LangManager.Instance.CurrentLang.Item}";
                 }
                 else
                 {
                     if (resultNumGlobal <= 1)
                     {
-                        MessageData.Message = $"{resultNumGlobal} item";
+                        MessageData.Message = $"{resultNumGlobal} {LangManager.Instance.CurrentLang.Item}";
                     }
                     else
                     {
-                        MessageData.Message = $"{resultNumGlobal} items";
+                        MessageData.Message = $"{resultNumGlobal} {LangManager.Instance.CurrentLang.Items}";
                     }
                 }
             }

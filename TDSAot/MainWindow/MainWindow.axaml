@@ -1,3 +1,5 @@
+
+
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -18,7 +20,9 @@
 	<Window.Resources>
 		<local:HighlightTextConverter x:Key="HighlightConverter"/>
 	</Window.Resources>
-	<Border BorderBrush="Gray" BorderThickness="1">
+
+	
+	<Border BorderBrush="Gray" BorderThickness="1">		
 
 		<DockPanel  LastChildFill="True">
 
@@ -56,15 +60,15 @@
 						<!-- 将 ContextMenu 绑定到 ListBox -->
 						<ListBox.ContextMenu>
 							<ContextMenu Opened="OnContextMenuOpened">
-								<MenuItem Header="Open (Enter)" Click="OpenFile"/>
-								<MenuItem Header="Open with...(Shift+Enter)" Click="OpenFileWith"  IsVisible="{Binding Items.IsShowOpenWith}"/>
-								<MenuItem Header="Open folder (Space)" Click="OpenFolder"/>
-								<MenuItem Header="Copy (Ctrl+C)" Click="Copy"/>
-								<MenuItem Header="Copy path (Ctrl+P)" Click="CopyPath"/>
-								<MenuItem Header="Delete (Del)" Click="Delete"/>
-								<MenuItem Header="Property... (Alt+Enter)" Click="ShowProperty"/>
+								<MenuItem Header="{Binding Items.Lang.OpenFile, Mode=OneWay}" Click="OpenFile"/>
+								<MenuItem Header="{Binding Items.Lang.OpenFileWith, Mode=OneWay}" Click="OpenFileWith"  IsVisible="{Binding Items.IsShowOpenWith}"/>
+								<MenuItem Header="{Binding Items.Lang.OpenFolderh, Mode=OneWay}" Click="OpenFolder"/>
+								<MenuItem Header="{Binding Items.Lang.Copy, Mode=OneWay}" Click="Copy"/>
+								<MenuItem Header="{Binding Items.Lang.CopyPath, Mode=OneWay}" Click="CopyPath"/>
+								<MenuItem Header="{Binding Items.Lang.Delete, Mode=OneWay}" Click="Delete"/>
+								<MenuItem Header="{Binding Items.Lang.Property, Mode=OneWay}" Click="ShowProperty"/>
 								<Separator/>
-								<MenuItem Header="Option..." Click="ShowDialog_Option"/>
+								<MenuItem Header="{Binding Items.Lang.Option, Mode=OneWay}" Click="ShowDialog_Option"/>
 							</ContextMenu>
 						</ListBox.ContextMenu>
 
