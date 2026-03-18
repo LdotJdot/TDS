@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using TDSNET.Engine.Actions;
 using TDSNET.Engine.Actions.USN;
@@ -29,7 +30,7 @@ namespace TDSNET.Utils
         /// <returns></returns>
         public static string getFileInfoStr(FrnFileOrigin f)
         {
-            var fileInfo = new FileInfo(GetPath(f).ToString());
+            var fileInfo = new FileInfo(GetPathFromRow(f.Volume, f.RowId));
 
             if (fileInfo.Exists)
             {
@@ -80,20 +81,39 @@ namespace TDSNET.Utils
             }
         }
 
+        public static string GetPathFromRow(FileSys fs, int row)
+        {
+            var segs = new List<string>();
+            int cur = row;
+            while (true)
+            {
+                ulong pfrn = fs.Index.GetParentFrn(cur);
+                var inner = fs.Index.GetInnerFileNameString(cur);
+                if (pfrn == ulong.MaxValue)
+                {
+                    char letter = inner.Length > 0 ? inner[0] : '?';
+                    var sb = new StringBuilder(64);
+                    sb.Append(letter).Append(':');
+                    for (int i = segs.Count - 1; i >= 0; i--)
+                    {
+                        sb.Append('\\');
+                        sb.Append(segs[i]);
+                    }
+                    var path = sb.ToString();
+                    if (path.Length == 2 && path[1] == ':')
+                        return path + "\\";
+                    return path;
+                }
+                segs.Add(getfileName(inner).ToString());
+                if (!fs.Index.TryGetRow(pfrn, out cur))
+                    return inner;
+            }
+        }
+
         public static ReadOnlySpan<char> GetPath(FrnFileOrigin f)
         {
-            var path = StringUtils.GetPathStr(f, ReadOnlySpan<char>.Empty);
-            if (path.EndsWith(":".AsSpan(), StringComparison.OrdinalIgnoreCase))
-            {
-                var pathChar = new char[path.Length + 1];
-                Array.Copy(path.ToArray(), pathChar, path.Length);
-                pathChar[pathChar.Length - 1] = '\\';
-                return pathChar.AsSpan();
-            }
-            else
-            {
-                return path;
-            }
+            var s = GetPathFromRow(f.Volume, f.RowId);
+            return s.AsSpan();
         }
 
         //#region 获取所有用户文件夹

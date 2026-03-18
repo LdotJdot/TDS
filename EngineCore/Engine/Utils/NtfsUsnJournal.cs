@@ -1,4 +1,4 @@
-﻿// NtfsUsnJournal.cs
+// NtfsUsnJournal.cs
 using EngineCore.Engine.Actions.USN;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
@@ -309,11 +309,10 @@ namespace TDSNET.Engine.Utils
         }
 
         ///Getall
-        public Dictionary<ulong, FrnFileOrigin> GetNtfsVolumeAllentries(char volname, out UsnJournalReturnCode usnRtnCode, FileSys filesys)
+        public void GetNtfsVolumeAllentries(char volname, out UsnJournalReturnCode usnRtnCode, FileSys filesys)
         {
-            Dictionary<ulong, FrnFileOrigin> foldersAndFiles = filesys.files;
-
-            foldersAndFiles.Add(ROOT_FILE_REFERENCE_NUMBER, FrnFileOrigin.Create(volname.ToString(), ROOT_FILE_REFERENCE_NUMBER, ulong.MaxValue));
+            filesys.Index.Clear();
+            filesys.Index.AppendRow(ROOT_FILE_REFERENCE_NUMBER, ulong.MaxValue, volname.ToString(), 0);
 
             usnRtnCode = UsnJournalReturnCode.VOLUME_NOT_NTFS;
             if (bNtfsVolume)
@@ -371,9 +370,7 @@ namespace TDSNET.Engine.Utils
                                     continue;
                                 }
 
-                                FrnFileOrigin f = FrnFileOrigin.Create(usnEntry.Name, usnEntry.FileReferenceNumber, usnEntry.ParentFileReferenceNumber);
-                          
-                                foldersAndFiles.Add(f.fileReferenceNumber, f);
+                                filesys.Index.AppendRow(usnEntry.FileReferenceNumber, usnEntry.ParentFileReferenceNumber, usnEntry.Name, 0);
 
                                 pUsnRecord = new IntPtr(pUsnRecord.ToInt64() + usnEntry.RecordLength);
                                 outBytesReturned -= usnEntry.RecordLength;
@@ -396,8 +393,6 @@ namespace TDSNET.Engine.Utils
                     usnRtnCode = UsnJournalReturnCode.INVALID_HANDLE_VALUE;
                 }
             }
-            // _elapsedTime = DateTime.Now - startTime;
-            return foldersAndFiles;
         }
 
         /// <summary>

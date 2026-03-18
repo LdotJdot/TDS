@@ -1,11 +1,10 @@
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Remote.Protocol.Input;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,304 +13,230 @@ using TDS.Utils;
 using TDSAot.State;
 using TDSNET.Engine.Actions.USN;
 using TDSNET.Engine.Utils;
-using Tmds.DBus.Protocol;
 
 namespace TDSAot
 {
     public partial class MainWindow : Window
     {
         private string keyword = string.Empty;
-        readonly private RunningState runningState=new RunningState();
+        readonly RunningState runningState = new RunningState();
+        private readonly Throttler _searchThrottler = new Throttler(100);
 
-        int resultNumGlobal= 0;
-        static internal string[] words;
+        static internal string[] words = [];
 
-        private async void SearchFilesThreadLoop(CancellationToken cancellationToken)
+        /// <summary>Background USN journal polling only.</summary>
+        private void SearchFilesThreadLoop(CancellationToken cancellationToken)
         {
-            runningState.Threadrunning = true;
-
-            while (runningState.Threadrunning == true && !cancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                string[] dwords = null;
-                int resultNum = 0;
-                UInt64 unidwords = 0;
-                UInt64 uniwords;
-                bool DoDirectory = false;
-                
                 try
                 {
-                    await runningState.gOs.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    Thread.Sleep(4000);
+                    if (!initialFinished) continue;
+                    foreach (var fs in fileSysList)
+                    {
+                        try { fs.DoWhileFileChanges(); }
+                        catch { /* ignore per-volume */ }
+                    }
                 }
                 catch
                 {
                     break;
                 }
+            }
+        }
 
-                words=[];
+        private void TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            keyword = inputBox?.Text ?? "";
+            _searchThrottler.Throttle(() => _ = Task.Run(RunSearchFromInput));
+        }
 
-                runningState.Threadrest = false;  //重启标签
+        private void RunSearchFromInput()
+        {
+            string threadKeyword = keyword?.Trim() ?? "";
+            if (string.IsNullOrEmpty(threadKeyword))
+            {
+                Dispatcher.UIThread.Post(ChangeToRecord);
+                return;
+            }
 
-                string threadKeyword = keyword;
-                if (string.IsNullOrEmpty(threadKeyword)) continue;  //过滤第一次触发时的刷新
+            string[]? driverNames = null;
+            if (threadKeyword.Contains(':'))
+            {
+                var parts = threadKeyword.Split(':', 2);
+                driverNames = parts[0].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                threadKeyword = parts.Length > 1 ? parts[1] : "";
+            }
 
-                string[] driverNames = null;
+            threadKeyword = threadKeyword.Replace("  ", " ").Trim();
+            bool isAll = threadKeyword.Contains(" /A", StringComparison.OrdinalIgnoreCase)
+                || threadKeyword.Contains("/a", StringComparison.OrdinalIgnoreCase);
+            if (isAll)
+            {
+                threadKeyword = threadKeyword.Replace(" /A", "", StringComparison.OrdinalIgnoreCase)
+                    .Replace("/a", "", StringComparison.OrdinalIgnoreCase).Trim();
+            }
 
-                if (threadKeyword.Contains(":"))
+            string[]? dwords = null;
+            ulong unidwords = 0;
+            ulong uniwords;
+            bool doDirectory = false;
+            string[] wordsLocal;
+
+            if (threadKeyword.Contains('\\'))
+            {
+                var tmp = threadKeyword.Split('\\', 2);
+                if (tmp.Length < 2) return;
+                string tmpdword = tmp[0].Trim();
+                string tmpword = tmp[1].Trim();
+                unidwords = FileSys.TBS(SpellCN.GetSpellCode(tmpdword));
+                uniwords = FileSys.TBS(SpellCN.GetSpellCode(tmpword));
+                dwords = tmpdword.Contains(' ') ? tmpdword.Split(' ', StringSplitOptions.RemoveEmptyEntries) : [tmpdword];
+                wordsLocal = tmpword.Contains(' ') ? tmpword.Split(' ', StringSplitOptions.RemoveEmptyEntries) : [tmpword];
+                doDirectory = true;
+            }
+            else
+            {
+                wordsLocal = threadKeyword.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (wordsLocal.Length == 0)
                 {
-                    driverNames = (threadKeyword.Split(':'))[0].Split(',');
-                    threadKeyword = (threadKeyword.Split(':'))[1];
+                    Dispatcher.UIThread.Post(ChangeToRecord);
+                    return;
                 }
+                uniwords = FileSys.TBS(SpellCN.GetSpellCode(threadKeyword.Replace(" ", "")));
+            }
 
-                threadKeyword = threadKeyword.ToUpperInvariant().Replace("  ", " ").Replace("  ", " ");
-                runningState.isAll = false;
+            words = wordsLocal;
+            int maxResults = isAll ? int.MaxValue : Math.Max(1, Option?.Findmax ?? 100);
+            var results = new List<FrnFileOrigin>(Math.Min(maxResults, 512));
+            object sync = new object();
+            int ticket = 0;
 
-                if (threadKeyword.Contains(" /A"))
+            try
+            {
+                if (runningState.DoUSNupdate && !runningState.ForbidUSNupdate)
                 {
-                    threadKeyword = threadKeyword.Replace(" /A", "");
-                    runningState.isAll = true;
+                    foreach (var fs in fileSysList)
+                    {
+                        try { fs.DoWhileFileChanges(); }
+                        catch { }
+                    }
                 }
+                runningState.DoUSNupdate = false;
 
-                if (threadKeyword.Contains("\\"))
+                Parallel.For(0, fileSysList.Count, d =>
                 {
-                    string[] tmp = threadKeyword.Split('\\');
-                    string tmpdword = tmp[0].Replace(" ", " ");
-                    string tmpword = tmp[1].Replace(" ", " ");
+                    var fs = fileSysList[d];
+                    if (fs.files.Count == 0) return;
 
-                    unidwords = FileSys.TBS(SpellCN.GetSpellCode(tmpdword));
-
-                    uniwords = FileSys.TBS(SpellCN.GetSpellCode(tmpword));
-
-                    if (tmp[0].Contains(" "))
+                    if (driverNames != null)
                     {
-                        dwords = tmp[0].Split(' ');
-                    }
-                    else
-                    {
-                        dwords = [tmp[0]];
-                    }
-                    if (tmp[1].Contains(" "))
-                    {
-                        words = tmp[1].Split(' ');
-                    }
-                    else
-                    {
-                        words = [tmp[1]];
+                        bool driverFound = driverNames.Any(driverName =>
+                            string.Equals(driverName, fs.driveInfoData.Name.TrimEnd('\\').TrimEnd(':'), StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(driverName, fs.driveInfoData.Name[0].ToString(), StringComparison.OrdinalIgnoreCase));
+                        if (!driverFound) return;
                     }
 
-                    DoDirectory = true;
-                }
-                else
-                {
-                    words = threadKeyword.Split(' ');
-                    string tmpword = threadKeyword.Replace(" ", "");
-
-                    uniwords = FileSys.TBS(SpellCN.GetSpellCode(tmpword));
-                }
-
-                try
-                {
-                    if (runningState.DoUSNupdate && !runningState.ForbidUSNupdate)
+                    // Linear scan over all alive rows (no trigram to save memory); filter with Index only, no alloc until we add.
+                    for (int row = 0; row < fs.Index.RowCount; row++)
                     {
-                        for (int i = 0; i < fileSysList.Count; i++)
-                        {
-                            try
-                            {
-                                fileSysList[i].DoWhileFileChanges();
-                            }
-                            catch
-                            {
-                                goto Restart;
-                            }
-                        }
-                    }
-                    runningState.DoUSNupdate = false;
+                        if (!fs.Index.IsAlive(row)) continue;
 
-
-                    Parallel.For(0, fileSysList.Count, d =>
-                    {
-                        if (runningState.Threadrest) { return; } //终止标签
-                        var fs = fileSysList[d];
-
-
-                        var l = fs.files;
-
-                        if (l.Count == 0) return;
-
-
-                        if (driverNames != null)
-                        {
-                            bool driverFound = false;
-                            foreach (string driverName in driverNames)
-                            {
-                                if (string.Equals(driverName, fs.driveInfoData.Name[0].ToString(), StringComparison.OrdinalIgnoreCase))
-                                {
-                                    driverFound = true;
-                                    break;
-                                }
-                            }
-
-                            if (!driverFound) return;
-                        }
-
-                        var comparisondType = unidwords == 0 ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-                        var comparisonType = uniwords == 0 ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-
-                       
                         bool finded = true;
 
-                        foreach (var f in fs.files.Values)
+                        if (doDirectory)
                         {
-                            if (runningState.Threadrest) { break; } //终止标签
-
-                            finded = true;
-
-                            if (DoDirectory)
+                            ulong pfrn = fs.Index.GetParentFrn(row);
+                            if (pfrn == ulong.MaxValue || !fs.Index.TryGetRow(pfrn, out int parentRow))
                             {
-                                if (f.parentFrn != null && l.TryGetValue(f.parentFrn.fileReferenceNumber, out FrnFileOrigin? dictmp))
+                                finded = false;
+                            }
+                            else
+                            {
+                                if ((unidwords | fs.Index.GetKeyIndex(parentRow)) != fs.Index.GetKeyIndex(parentRow))
+                                    finded = false;
+                                else
                                 {
-                                    if((unidwords | dictmp.keyindex) != dictmp.keyindex)
+                                    foreach (string key in dwords!)
                                     {
-                                        finded = false;
-                                        continue;
-                                    }
-
-                                    foreach (string key in dwords)
-                                    {
-                                        if (SpanCharUtils.NotContains(dictmp.innerFileName,key))
+                                        if (!fs.Index.ContainsSubstring(parentRow, key.AsSpan()))
                                         {
                                             finded = false;
                                             break;
                                         }
                                     }
                                 }
-                                else
-                                {
-                                    finded = false;
-                                }
                             }
+                        }
 
-                            if (finded)
+                        if (finded)
+                        {
+                            ulong kix = fs.Index.GetKeyIndex(row);
+                            if ((uniwords | kix) != kix)
+                                finded = false;
+                            else
                             {
-                                if ((uniwords | f.keyindex) != f.keyindex)
+                                foreach (var w in wordsLocal)
                                 {
-                                    finded = false;
-                                    continue;
-                                }
-                                
-                                var filenamespan=f.innerFileName.AsSpan();
-                                if (words.Length == 1)
-                                {
-                                    if (SpanCharUtils.NotContains(filenamespan, words[0]))
+                                    if (!fs.Index.ContainsSubstring(row, w.AsSpan()))
                                     {
                                         finded = false;
-                                        continue;
+                                        break;
                                     }
-                                }
-                                else if (words.Length == 2)
-                                {
-                                    if (SpanCharUtils.NotContains(filenamespan, words[0]) ||
-                                        SpanCharUtils.NotContains(filenamespan, words[1]))
-                                    {
-                                        finded = false;
-                                        continue;
-                                    }
-                                }
-                                else if (words.Length == 3)
-                                {
-                                    if (SpanCharUtils.NotContains(filenamespan, words[0]) ||
-                                        SpanCharUtils.NotContains(filenamespan, words[1]) ||
-                                        SpanCharUtils.NotContains(filenamespan, words[2]))
-                                    {
-                                        finded = false;
-                                        continue;
-                                    }
-                                }
-                                else
-                                {
-                                    foreach (string key in words)
-                                    {
-                                        if (SpanCharUtils.NotContains(filenamespan, key))
-                                        {
-                                            finded = false;
-                                            continue;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (finded)
-                            {
-                                vlist[Interlocked.Increment(ref resultNum) - 1] = f;
-
-                                if (resultNum == vlist.Length || (Option.Findmax > 0 && resultNum > Option.Findmax && runningState.isAll == false))
-                                {
-                                    break;
-                                }
-
-                                if (resultNum < 50)//提前显示
-                                {
-                                    if (resultNum == 1)
-                                    {
-                                        Debug.WriteLine(f.fileReferenceNumber.ToString());
-                                    }
-                                    resultNumGlobal = resultNum;
-                                    UpdateList(false);  //必须异步BeginInvoke，不然不同步
                                 }
                             }
                         }
-                    });
-                }
-                catch (Exception ex)
-                {
-                }
 
-                if (!runningState.Threadrest)
-                {
-                    if (resultNum > 0)
-                    {
-                        resultNumGlobal = resultNum;
-                        UpdateList();  //必须异步BeginInvoke，不然不同步
+                        if (!finded) continue;
+
+                        var f = fs.GetOrigin(row);
+
+                        if (isAll)
+                        {
+                            lock (sync)
+                            {
+                                results.Add(f);
+                                if (results.Count == 1)
+                                    Debug.WriteLine(f.fileReferenceNumber.ToString());
+                            }
+                        }
+                        else
+                        {
+                            int t = Interlocked.Increment(ref ticket);
+                            if (t <= maxResults)
+                            {
+                                lock (sync)
+                                {
+                                    results.Add(f);
+                                    if (t == 1)
+                                        Debug.WriteLine(f.fileReferenceNumber.ToString());
+                                }
+                            }
+                        }
                     }
-                    else
-                    {
-                        resultNumGlobal = resultNum;
-                        UpdateList();  //异步BeginInvoke
-                    }
-                }
-Restart:;
+                });
             }
-        }
-
-        private void UpdateList(bool finished = true)
-        {
-
-            UpdateData(vlist, resultNumGlobal);
-
-            if (finished == false)
+            catch
             {
-                MessageData.Message = $"...";
+                /* ignore */
             }
-            else
+
+            int n = results.Count;
+            Dispatcher.UIThread.Post(() =>
             {
-                if (Option.Findmax>0 && resultNumGlobal > Option.Findmax && runningState.isAll == false)
-                {
-                     MessageData.Message = $"{Option.Findmax} +{LangManager.Instance.CurrentLang.Item}";
-                }
+                UpdateData(results, n);
+                if (Option.Findmax > 0 && n > Option.Findmax && !isAll)
+                    MessageData.Message = $"{Option.Findmax} +{LangManager.Instance.CurrentLang.Item}";
+                else if (n <= 1)
+                    MessageData.Message = $"{n} {LangManager.Instance.CurrentLang.Item}";
                 else
-                {
-                    if (resultNumGlobal <= 1)
-                    {
-                        MessageData.Message = $"{resultNumGlobal} {LangManager.Instance.CurrentLang.Item}";
-                    }
-                    else
-                    {
-                        MessageData.Message = $"{resultNumGlobal} {LangManager.Instance.CurrentLang.Items}";
-                    }
-                }
-            }
+                    MessageData.Message = $"{n} {LangManager.Instance.CurrentLang.Items}";
+            });
         }
 
         IInputElement? lastFocused;
+
         private void RefreshFileData()
         {
             runningState.DoUSNupdate = true;

@@ -1,11 +1,9 @@
-﻿using System.Text;
+using System.Text;
 using TDSNET.Engine.Actions.USN;
 using K4os.Compression.LZ4.Streams;
 
-
 namespace EngineCore.Engine.Actions.USN
 {
-
     public class DiskDataCache
     {
         string path;
@@ -16,7 +14,6 @@ namespace EngineCore.Engine.Actions.USN
             this.path = path;
         }
 
-
         public void Discard()
         {
             if (File.Exists(path)) { File.Delete(path); }
@@ -25,10 +22,9 @@ namespace EngineCore.Engine.Actions.USN
         public void DumpToDisk(List<FileSys> fileSys)
         {
             Discard();
-            
+
             using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read | FileShare.Delete);
             using var lz4s = LZ4Stream.Encode(fileStream, K4os.Compression.LZ4.LZ4Level.L00_FAST);
-            //   using GZipStream gz = new GZipStream(fs, CompressionLevel.Fastest);
 
             using var writer = new BinaryWriter(lz4s, Encoding.UTF8);
             foreach (FileSys file in fileSys)
@@ -42,7 +38,6 @@ namespace EngineCore.Engine.Actions.USN
             fileStream.Close();
         }
 
-
         private void DumpToDisk(FileSys fileSys, BinaryWriter writer)
         {
             writer.Write(fileSys.driveInfoData.Name);
@@ -55,16 +50,16 @@ namespace EngineCore.Engine.Actions.USN
             writer.Write(fileSys.usnStates.MaximumSize);
             writer.Write(fileSys.usnStates.AllocationDelta);
 
-            foreach (var file in fileSys.files.Values)
+            for (int row = 0; row < fileSys.Index.RowCount; row++)
             {
-                writer.Write(file.fileReferenceNumber);
-                writer.Write(file.parentFileReferenceNumber);
-                writer.Write(file.innerFileName);
-                writer.Write(file.keyindex);
+                if (!fileSys.Index.IsAlive(row)) continue;
+                writer.Write(fileSys.Index.GetFileFrn(row));
+                writer.Write(fileSys.Index.GetParentFrn(row));
+                writer.Write(fileSys.Index.GetInnerFileNameString(row));
+                writer.Write(fileSys.Index.GetKeyIndex(row));
             }
             writer.Write(ENDTAG);
         }
-
 
         public List<FileSys>? TryLoadFromDisk()
         {
@@ -73,19 +68,16 @@ namespace EngineCore.Engine.Actions.USN
         }
 
         private List<FileSys>? LoadFromDiskSync()
-        {            
+        {
             try
             {
-
                 using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
                 using var lz4s = LZ4Stream.Decode(fileStream);
-
-                // using GZipStream gz = new GZipStream(files, CompressionMode.Decompress, false);
 
                 using var reader = new BinaryReader(lz4s, Encoding.UTF8);
 
                 var fileSys = new List<FileSys>();
-start:;
+            start:;
                 var fs = new FileSys(new DriveInfoData());
 
                 var firstLine = reader.ReadString();
@@ -111,7 +103,6 @@ start:;
                     if (nextId == ENDTAG)
                     {
                         fileSys.Add(fs);
-
                         goto start;
                     }
                     else
@@ -120,9 +111,7 @@ start:;
                         var parentRefNum = reader.ReadUInt64();
                         var name = reader.ReadString();
                         var keyIndex = reader.ReadUInt64();
-                        var newF = FrnFileOrigin.Create(name, refNum, parentRefNum);
-                        newF.keyindex = keyIndex;
-                        fs.files.Add(refNum, newF);
+                        fs.Index.AppendRow(refNum, parentRefNum, name, keyIndex);
                     }
                 }
             }
@@ -132,9 +121,4 @@ start:;
             }
         }
     }
-
-
-
-
-
 }
