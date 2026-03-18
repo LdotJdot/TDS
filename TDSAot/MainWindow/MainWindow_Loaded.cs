@@ -25,6 +25,7 @@ namespace TDSAot
         private static ActionState? state;
 
         private List<FileSys> fileSysList = new List<FileSys>();
+        private FrnFileOrigin[] vlist;
 
         private bool initialFinished = false;
 
@@ -80,7 +81,7 @@ namespace TDSAot
                     InitializationFromUSN();
                     try
                     {
-                        cache.DumpToDisk(fileSysList);    // ???????
+                        cache.DumpToDisk(fileSysList);    // 执行缓存
                     }
                     catch (Exception ex)
                     {
@@ -89,7 +90,9 @@ namespace TDSAot
                 }
             }
 
-            ReadRecords();  //??????* //
+            vlist = new FrnFileOrigin[fileSysList.Sum(o => o.files.Count)];
+
+            ReadRecords();  //记录相关* //
             UpdateRecord();
 
             StringBuilder drinfo = new StringBuilder();
@@ -178,7 +181,39 @@ namespace TDSAot
                 Parallel.ForEach(fileSysList, fs =>
                 {
                     fs.ntfsUsnJournal = new NtfsUsnJournal(fs.driveInfoData);
-                    ApplyLnkSortRank(fs);
+                    //重整parent索引
+                    foreach (FrnFileOrigin ffull in fs.files.Values)
+                    {
+                        FrnFileOrigin f = ffull as FrnFileOrigin;
+                        if (f.parentFileReferenceNumber != ulong.MaxValue && fs.files.ContainsKey(f.parentFileReferenceNumber))
+                        {
+                            if (f.parentFrn == null)
+                            {
+                                f.parentFrn = fs.files[f.parentFileReferenceNumber];
+                            }
+                        }
+                    }
+
+
+
+                    HashSet<FrnFileOrigin> first = new HashSet<FrnFileOrigin>();
+
+                    foreach (var f in fs.files.Values)
+                    {
+                        string ext = StringUtils.GetExtension(PathHelper.getfileName(f.innerFileName)).ToString();
+
+                        if (string.Equals(ext, ".LNK", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var path = PathHelper.GetPath(f);
+                            if (path.IndexOf(PathHelper.USER_PROGRAM_PATH, StringComparison.OrdinalIgnoreCase) != -1 || path.IndexOf(PathHelper.ALLUSER_PROGRAM_PATH, StringComparison.OrdinalIgnoreCase) != -1)
+                            {
+                                first.Add(f);
+                            }
+                        }
+                    }
+
+
+                    fs.files = fs.files.OrderByDescending(o => first.Contains(o.Value)).ToDictionary(p => p.Key, o => o.Value);
                     fs.Compress();
                 });
 
@@ -202,7 +237,7 @@ namespace TDSAot
                 }));
             }
 
-            int dri_nums = -1;  //????
+            int dri_nums = -1;  //盘数
 
             dri_nums = fileSysList.Count();
 
@@ -227,7 +262,7 @@ namespace TDSAot
                         fs.usnStates = new Win32Api.USN_JOURNAL_DATA();
                         if (!fs.SaveJournalState())
                         {
-                            fs.ntfsUsnJournal.CreateUsnJournal(1000 * 1024, 16 * 1024);  //???????USN
+                            fs.ntfsUsnJournal.CreateUsnJournal(1000 * 1024, 16 * 1024);  //尝试重建USN
                             if (!fs.SaveJournalState())
                             {
                                 MessageData.Message = "File read failed";
@@ -235,14 +270,44 @@ namespace TDSAot
                         }
                         fs.CreateFiles();
 
-                        for (int r = 0; r < fs.Index.RowCount; r++)
+                        //重整parent索引
+                        foreach (FrnFileOrigin ffull in fs.files.Values)
                         {
-                            if (!fs.Index.IsAlive(r)) continue;
-                            var raw = fs.Index.GetInnerFileNameString(r);
-                            FileSys.GetNACNNameAndIndex(raw, out var nacnName, out var index, SpellDict);
-                            fs.Index.UpdateRowNameAndParent(r, fs.Index.GetParentFrn(r), nacnName, index);
+                            FrnFileOrigin f = ffull as FrnFileOrigin;
+                            if (f.parentFileReferenceNumber != ulong.MaxValue && fs.files.ContainsKey(f.parentFileReferenceNumber))
+                            {
+                                if (f.parentFrn == null)
+                                {
+                                    f.parentFrn = fs.files[f.parentFileReferenceNumber];
+                                }
+                            }
                         }
-                        ApplyLnkSortRank(fs);
+
+                        foreach (var f in fs.files.Values)
+                        {
+                            FileSys.GetNACNNameAndIndex(f.innerFileName, out var nacnName, out var index, SpellDict);
+
+                            f.keyindex = index;
+                            f.SetInnerFileName(nacnName);
+                        }
+
+                        HashSet<FrnFileOrigin> first = new HashSet<FrnFileOrigin>();
+
+                        foreach (var f in fs.files.Values)
+                        {
+                            string ext = StringUtils.GetExtension(PathHelper.getfileName(f.innerFileName)).ToString();
+
+                            if (string.Equals(ext, ".LNK", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var path = PathHelper.GetPath(f);
+                                if (path.IndexOf(PathHelper.USER_PROGRAM_PATH, StringComparison.OrdinalIgnoreCase) != -1 || path.IndexOf(PathHelper.ALLUSER_PROGRAM_PATH, StringComparison.OrdinalIgnoreCase) != -1)
+                                {
+                                    first.Add(f);
+                                }
+                            }
+                        }
+
+                        fs.files = fs.files.OrderByDescending(o => first.Contains(o.Value)).ToDictionary(p => p.Key, o => o.Value);
                         fs.Compress();
                     });
                 }
@@ -250,29 +315,6 @@ namespace TDSAot
                 Task.WaitAll(tasks);
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
-            }
-        }
-
-        private static void ApplyLnkSortRank(FileSys fs)
-        {
-            HashSet<int> priority = new HashSet<int>();
-            for (int r = 0; r < fs.Index.RowCount; r++)
-            {
-                if (!fs.Index.IsAlive(r)) continue;
-                var inner = fs.Index.GetInnerFileNameString(r);
-                string ext = StringUtils.GetExtension(PathHelper.getfileName(inner)).ToString();
-                if (string.Equals(ext, ".LNK", StringComparison.OrdinalIgnoreCase))
-                {
-                    var path = PathHelper.GetPathFromRow(fs, r);
-                    if (path.IndexOf(PathHelper.USER_PROGRAM_PATH, StringComparison.OrdinalIgnoreCase) >= 0
-                        || path.IndexOf(PathHelper.ALLUSER_PROGRAM_PATH, StringComparison.OrdinalIgnoreCase) >= 0)
-                        priority.Add(r);
-                }
-            }
-            for (int r = 0; r < fs.Index.RowCount; r++)
-            {
-                if (fs.Index.IsAlive(r))
-                    fs.Index.SetSortRank(r, (byte)(priority.Contains(r) ? 1 : 0));
             }
         }
     }
