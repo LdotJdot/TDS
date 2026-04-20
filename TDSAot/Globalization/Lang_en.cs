@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,6 +31,15 @@ namespace TDS.Globalization
         public string DisableStartup { get; set; } = "Disable run at Windows startup";
         public string EnableStartup { get; set; } = "Enable run at Windows startup";
         public string Exit { get; set; } = "Exit";
+
+        public string TrayPeekDesktop { get; set; } = "Peek Desktop";
+        public string PeekEnabled { get; set; } = "Enabled";
+        public string PeekDoubleClick { get; set; } = "Require double-click";
+        public string PeekTaskbarClick { get; set; } = "Peek on taskbar click";
+        public string PeekGameGuard { get; set; } = "Pause while fullscreen / gaming";
+        public string PeekModeNative { get; set; } = "Mode: Native show desktop";
+        public string PeekModeFlyAway { get; set; } = "Mode: Fly away (experimental)";
+        public string PeekModeMinimize { get; set; } = "Mode: Minimize windows";
 
         //Settings
         public string DefaultResultCount { get; set; } = "Default Result Count:";

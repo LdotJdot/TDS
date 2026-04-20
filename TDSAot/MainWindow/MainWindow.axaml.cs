@@ -6,6 +6,7 @@ using Avalonia.Themes.Fluent;
 using System;
 using System.Security.Principal;
 using System.Text;
+using TDS.PeekDesktop;
 using TDS.Utils;
 using TDSAot.State;
 using TDSAot.Utils;
@@ -42,7 +43,7 @@ namespace TDSAot
             InitializeEnvironment();
             InitializeFileAction();
             InitializeEvent();
-            // 初始化
+            // ?????
         }
 
         double DefaultHeight;
@@ -51,7 +52,7 @@ namespace TDSAot
         private void InitializeEvent()
         {
             this.Deactivated += OnWindowDeactivated;
-            // 可选：订阅窗口获得焦点事件
+            // ????????????????????
             this.Activated += OnWindowActivated;
 
             this.KeyDown += OnAppKeyDown;
@@ -63,32 +64,32 @@ namespace TDSAot
         private void InitializeEnvironment()
         {
             this.Title = "TDS";
-            // 数据绑定注册
+            // ????????
             DataContext = this;
-            // 字符注册
+            // ??????
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            // UI事件冒泡,解决冲突
+            // UI??????,??????
             inputBox.AddHandler(
              InputElement.PointerPressedEvent,
              Keywords_MouseDown!,
              RoutingStrategies.Bubble,
              true);
 
-            // UI事件冒泡,解决冲突
+            // UI??????,??????
             inputBox.AddHandler(
              InputElement.KeyDownEvent,
              Input_KeyDown!,
              RoutingStrategies.Bubble,
              true);
 
-            // 句柄注册
-            hwnd = GetNativeHandle().Handle;    //获取窗口句柄
+            // ??????
+            hwnd = GetNativeHandle().Handle;    //?????????
 
 
             InitializeHotKeys(hwnd);
             fileListBox.Focusable = true;
-            // 初始化配置文件
+            // ????????????
 
         }
 
@@ -96,7 +97,7 @@ namespace TDSAot
         {
             var topLevel = TopLevel.GetTopLevel(this)!;
 
-            // 通过窗口获取，方法更加简单：
+            // ?????????????????????
             return topLevel.TryGetPlatformHandle()!;
         }
 
@@ -112,6 +113,7 @@ namespace TDSAot
             {
 
             }
+            PeekDesktopHost.Shutdown();
             _trayIcon?.Dispose();
             Environment.Exit(0);
         }

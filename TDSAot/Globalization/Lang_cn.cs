@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,6 +31,15 @@ namespace TDS.Globalization
         public string DisableStartup { get; set; } = "禁止开机启动";
         public string EnableStartup { get; set; } = "添加开机启动";
         public string Exit { get; set; } = "退出";
+
+        public string TrayPeekDesktop { get; set; } = "桌面速览 (Peek)";
+        public string PeekEnabled { get; set; } = "启用";
+        public string PeekDoubleClick { get; set; } = "需要双击";
+        public string PeekTaskbarClick { get; set; } = "任务栏空白处触发";
+        public string PeekGameGuard { get; set; } = "全屏/游戏时暂停";
+        public string PeekModeNative { get; set; } = "模式：系统「显示桌面」";
+        public string PeekModeFlyAway { get; set; } = "模式：飞离窗口 (实验)";
+        public string PeekModeMinimize { get; set; } = "模式：最小化窗口";
 
         //Settings        
         public string DefaultResultCount { get; set; } = "默认显示结果数量:";

@@ -33,6 +33,9 @@ namespace TDSAot
         {
             SetWindowSizeByScreenRatio(0.4, 0.5);
 
+            // Initialize PeekDesktop after UI is shown to avoid startup delay
+            InitializePeekDesktopAfterUiShown();
+
             Reset();
         }
 
@@ -81,7 +84,7 @@ namespace TDSAot
                     InitializationFromUSN();
                     try
                     {
-                        cache.DumpToDisk(fileSysList);    // Ö´ÐÐ»º´æ
+                        cache.DumpToDisk(fileSysList);    // Ö´ï¿½Ð»ï¿½ï¿½ï¿½
                     }
                     catch (Exception ex)
                     {
@@ -92,7 +95,7 @@ namespace TDSAot
 
             vlist = new FrnFileOrigin[fileSysList.Sum(o => o.files.Count)];
 
-            ReadRecords();  //¼ÇÂ¼Ïà¹Ø* //
+            ReadRecords();  //ï¿½ï¿½Â¼ï¿½ï¿½ï¿½* //
             UpdateRecord();
 
             StringBuilder drinfo = new StringBuilder();
@@ -120,18 +123,9 @@ namespace TDSAot
         {
             Dispatcher.UIThread.Invoke(() =>
             {
-                if (_trayIcon.Menu?.Items[1] is NativeMenuItem nmi)
-                {
-                    nmi.IsEnabled = true;
-                }
-                if (_trayIcon.Menu?.Items[2] is NativeMenuItem reindex)
-                {
-                    reindex.IsEnabled = true;
-                }
-                if (_trayIcon.Menu?.Items[4] is NativeMenuItem exit)
-                {
-                    exit.IsEnabled = true;
-                }
+                _trayOptionItem.IsEnabled = true;
+                _trayReindexItem.IsEnabled = true;
+                _trayStartupItem.IsEnabled = true;
                 inputBox.Watermark = LangManager.Instance.CurrentLang.InputWaterMarkInput;
                 inputBox.IsEnabled = true;
                 fileListBox.IsEnabled = true;
@@ -144,18 +138,9 @@ namespace TDSAot
         {
             Dispatcher.UIThread.Invoke(() =>
             {
-                if (_trayIcon.Menu?.Items[1] is NativeMenuItem nmi)
-                {
-                    nmi.IsEnabled = false;
-                }
-                if (_trayIcon.Menu?.Items[2] is NativeMenuItem reindex)
-                {
-                    reindex.IsEnabled = false;
-                }
-                if (_trayIcon.Menu?.Items[4] is NativeMenuItem exit)
-                {
-                    exit.IsEnabled = false;
-                }
+                _trayOptionItem.IsEnabled = false;
+                _trayReindexItem.IsEnabled = false;
+                _trayStartupItem.IsEnabled = false;
                 inputBox.Watermark = LangManager.Instance.CurrentLang.InputWaterMarkPending;
                 inputBox.IsEnabled = false;
                 fileListBox.IsEnabled = false;
@@ -181,7 +166,7 @@ namespace TDSAot
                 Parallel.ForEach(fileSysList, fs =>
                 {
                     fs.ntfsUsnJournal = new NtfsUsnJournal(fs.driveInfoData);
-                    //ÖØÕûparentË÷Òý
+                    //ï¿½ï¿½ï¿½ï¿½parentï¿½ï¿½ï¿½ï¿½
                     foreach (FrnFileOrigin ffull in fs.files.Values)
                     {
                         FrnFileOrigin f = ffull as FrnFileOrigin;
@@ -237,7 +222,7 @@ namespace TDSAot
                 }));
             }
 
-            int dri_nums = -1;  //ÅÌÊý
+            int dri_nums = -1;  //ï¿½ï¿½ï¿½ï¿½
 
             dri_nums = fileSysList.Count();
 
@@ -262,7 +247,7 @@ namespace TDSAot
                         fs.usnStates = new Win32Api.USN_JOURNAL_DATA();
                         if (!fs.SaveJournalState())
                         {
-                            fs.ntfsUsnJournal.CreateUsnJournal(1000 * 1024, 16 * 1024);  //³¢ÊÔÖØ½¨USN
+                            fs.ntfsUsnJournal.CreateUsnJournal(1000 * 1024, 16 * 1024);  //ï¿½ï¿½ï¿½ï¿½ï¿½Ø½ï¿½USN
                             if (!fs.SaveJournalState())
                             {
                                 MessageData.Message = "File read failed";
@@ -270,7 +255,7 @@ namespace TDSAot
                         }
                         fs.CreateFiles();
 
-                        //ÖØÕûparentË÷Òý
+                        //ï¿½ï¿½ï¿½ï¿½parentï¿½ï¿½ï¿½ï¿½
                         foreach (FrnFileOrigin ffull in fs.files.Values)
                         {
                             FrnFileOrigin f = ffull as FrnFileOrigin;

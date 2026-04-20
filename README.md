@@ -45,6 +45,54 @@ Now it is a single .exe file around 20MB!
 - **用户友好**：直观且美观的界面，既实用又吸引人。
 - **Cross-Platform**: Built with Avalonia UI, ensuring compatibility across different platforms.
 - **跨平台**：使用 Avalonia UI 构建，确保跨平台兼容性。
+- **Peek Desktop (integrated)**: Click empty desktop wallpaper (optional double-click / taskbar blank area) to temporarily hide other windows and focus the desktop — see the section below.
+- **桌面速览（已整合）**：点击桌面空白壁纸（可选双击或任务栏空白触发）临时「速览」桌面；详见下文。
+
+## Peek Desktop (integrated)
+## 桌面速览（PeekDesktop 整合说明）
+
+The former standalone **PeekDesktop** feature is now **embedded in TDS** as the `TDS.PeekDesktop` namespace. It runs on a dedicated STA thread with a Win32 message loop and a low-level mouse hook, matching the original architecture so shell behavior stays reliable.
+
+原独立项目 **PeekDesktop** 已**内嵌到 TDS** 中，命名空间为 `TDS.PeekDesktop`。在与独立版相同的模型下运行（专用 STA 线程 + Win32 消息泵 + 底层鼠标钩子），以保证与 Shell 交互稳定。
+https://github.com/shanselman/PeekDesktop
+
+### User-facing behavior
+### 功能与入口
+
+- **Tray menu**: Under **Peek Desktop** (English) / **桌面速览 (Peek)** (简体中文), you can toggle the feature and sub-options. Settings are persisted automatically.
+- **托盘菜单**：在 **Peek Desktop** / **桌面速览 (Peek)** 子菜单中可开关功能及子项，设置会自动保存。
+- **Typical options**: enable/disable; require double-click on desktop; peek when clicking blank taskbar area; pause while fullscreen/gaming; peek mode (native Show Desktop, minimize windows, or experimental fly-away).
+- **常用选项**：启用；需要双击桌面；任务栏空白处触发；全屏/游戏时暂停；速览模式（系统「显示桌面」、最小化窗口、实验性飞离窗口等）。
+
+### Configuration file
+### 配置文件
+
+- Path: `%APPDATA%\TDS\peekdesktop.json`
+- **Note**: General TDS startup still uses `conf.json` in the app folder where applicable; Peek-specific options live only in `peekdesktop.json`.
+- **说明**：应用本身的其它配置仍以程序目录下的 `conf.json` 等为准；桌面速览**仅**读写上述 `peekdesktop.json`。
+
+### Startup / autostart
+### 开机启动
+
+- When you enable **auto-start** inside TDS, the app registers **`HKCU\...\Run`** value **`TDS`** pointing at the current executable with **`--hide`** (see `StartUpUtils` in `Utils/ShellRun.cs`).
+- Legacy **Startup folder shortcuts** (`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\TDS.lnk`) are removed when migrating to the registry Run entry.
+- **若在 TDS 内开启开机启动**：会向当前用户 **`Run`** 注册项 **`TDS`**，命令为 **`"TDS.exe" --hide`**（实现见 `Utils/ShellRun.cs`）。迁移到注册表后会尝试删除旧的**启动文件夹**快捷方式。
+
+### Integration & maintenance notes (for developers)
+### 整合与维护说明（开发者）
+
+- **Source layout**: `TDSAot/PeekDesktop/` (`DesktopPeek`, `MouseHook`, `DesktopDetector`, `PeekDesktopHost`, `NativeMethods`, UI Automation helpers, etc.).
+- **Initialization**: Peek starts **after the main window is loaded**, on a **background task**, so the first screen and splash are not blocked (`MainWindow_Loaded` → `InitializePeekDesktopAfterUiShown`).
+- **Shutdown**: `PeekDesktopHost.Shutdown()` is invoked when the application exits.
+- **Removed from this repo**: the old **`ProxyLibs`** native proxy DLL project and startup-folder-only workflow; distribution is a **single** `TDS` executable without copying `ProxyLibs.dll`.
+- **Networking**: integrated Peek does **not** bundle the old standalone updater / WinHTTP auto-update path for Peek.
+- **Classification robustness**: if cross-process desktop ListView hit-testing temporarily fails, clicks on the desktop icon list are treated conservatively as **icon-area** so peek does not fire by mistake (see `DesktopDetector.GetClickTarget`).
+- **源码目录**：`TDSAot/PeekDesktop/`。
+- **启动时机**：主窗体 **Loaded** 之后在**后台任务**中启动，避免卡住首屏（`InitializePeekDesktopAfterUiShown`）。
+- **退出**：应用退出时调用 **`PeekDesktopHost.Shutdown()`**。
+- **已移除**：原 **`ProxyLibs`** 工程及依赖启动文件夹快捷方式的旧流程；发布物为**单一** `TDS` 可执行文件，不再附带 `ProxyLibs.dll`。
+- **联网**：整合后的桌面速览**不包含**原独立程序的联网自动更新路径。
+- **点击分类**：跨进程桌面图标列表命中测试失败时，保守按**图标区域**处理，避免误触发速览（见 **`DesktopDetector.GetClickTarget`**）。
 
 ## Installation
 ## 安装

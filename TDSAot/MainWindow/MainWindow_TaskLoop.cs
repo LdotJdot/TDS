@@ -49,10 +49,10 @@ namespace TDSAot
 
                 words=[];
 
-                runningState.Threadrest = false;  //ÖØÆô±êÇ©
+                runningState.Threadrest = false;  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç©
 
                 string threadKeyword = keyword;
-                if (string.IsNullOrEmpty(threadKeyword)) continue;  //¹ýÂËµÚÒ»´Î´¥·¢Ê±µÄË¢ÐÂ
+                if (string.IsNullOrEmpty(threadKeyword)) continue;  //ï¿½ï¿½ï¿½Ëµï¿½Ò»ï¿½Î´ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ë¢ï¿½ï¿½
 
                 string[] driverNames = null;
 
@@ -129,7 +129,7 @@ namespace TDSAot
 
                     Parallel.For(0, fileSysList.Count, d =>
                     {
-                        if (runningState.Threadrest) { return; } //ÖÕÖ¹±êÇ©
+                        if (runningState.Threadrest) { return; } //ï¿½ï¿½Ö¹ï¿½ï¿½Ç©
                         var fs = fileSysList[d];
 
 
@@ -161,7 +161,7 @@ namespace TDSAot
 
                         foreach (var f in fs.files.Values)
                         {
-                            if (runningState.Threadrest) { break; } //ÖÕÖ¹±êÇ©
+                            if (runningState.Threadrest) { break; } //ï¿½ï¿½Ö¹ï¿½ï¿½Ç©
 
                             finded = true;
 
@@ -248,14 +248,14 @@ namespace TDSAot
                                     break;
                                 }
 
-                                if (resultNum < 50)//ÌáÇ°ÏÔÊ¾
+                                if (resultNum < 50)//ï¿½ï¿½Ç°ï¿½ï¿½Ê¾
                                 {
                                     if (resultNum == 1)
                                     {
                                         Debug.WriteLine(f.fileReferenceNumber.ToString());
                                     }
                                     resultNumGlobal = resultNum;
-                                    UpdateList(false);  //±ØÐëÒì²½BeginInvoke£¬²»È»²»Í¬²½
+                                    UpdateList(false);  //ï¿½ï¿½ï¿½ï¿½ï¿½ì²½BeginInvokeï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½Í¬ï¿½ï¿½
                                 }
                             }
                         }
@@ -270,12 +270,12 @@ namespace TDSAot
                     if (resultNum > 0)
                     {
                         resultNumGlobal = resultNum;
-                        UpdateList();  //±ØÐëÒì²½BeginInvoke£¬²»È»²»Í¬²½
+                        UpdateList();  //ï¿½ï¿½ï¿½ï¿½ï¿½ì²½BeginInvokeï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½Í¬ï¿½ï¿½
                     }
                     else
                     {
                         resultNumGlobal = resultNum;
-                        UpdateList();  //Òì²½BeginInvoke
+                        UpdateList();  //ï¿½ì²½BeginInvoke
                     }
                 }
 Restart:;

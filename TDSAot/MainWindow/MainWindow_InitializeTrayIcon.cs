@@ -1,9 +1,10 @@
 using Avalonia.Controls;
 using Avalonia.Platform;
-using Microsoft.Win32;
+using Avalonia.Threading;
 using System;
-using TDS;
+using System.Threading.Tasks;
 using TDS.Globalization;
+using TDS.PeekDesktop;
 using TDS.State;
 using TDS.Utils;
 using TDSAot.Utils;
@@ -12,97 +13,231 @@ namespace TDSAot
 {
     public partial class MainWindow : Window
     {
-        private TrayIcon _trayIcon;
+        private TrayIcon _trayIcon = null!;
+
+        private NativeMenuItem _trayShowItem = null!;
+        private NativeMenuItem _trayOptionItem = null!;
+        private NativeMenuItem _trayReindexItem = null!;
+        private NativeMenuItem _trayAboutItem = null!;
+        private NativeMenuItem _trayPeekRoot = null!;
+        private NativeMenuItem _trayStartupItem = null!;
+        private NativeMenuItem _trayExitItem = null!;
+
+        private NativeMenuItem _peekEnabledItem = null!;
+        private NativeMenuItem _peekDoubleClickItem = null!;
+        private NativeMenuItem _peekTaskbarItem = null!;
+        private NativeMenuItem _peekGameGuardItem = null!;
+        private NativeMenuItem _peekModeNativeItem = null!;
+        private NativeMenuItem _peekModeFlyItem = null!;
+        private NativeMenuItem _peekModeMinItem = null!;
 
         private void InitializeTrayIcon()
         {
-            // 创建TrayIcon实例
             _trayIcon = new TrayIcon();
 
             var uri = new Uri(@"avares://TDS/Assets/tds32-32.ico");
             using var asset = AssetLoader.Open(uri);
-            // 设置图标
             var icon = new WindowIcon(asset);
             _trayIcon.Icon = icon;
             this.Icon = icon;
 
-            // 设置提示文本
             _trayIcon.ToolTipText = "TDS";
 
-            // 创建上下文菜单
             var menu = new NativeMenu();
+            var lang = LangManager.Instance.CurrentLang;
 
-            var showItem = new NativeMenuItem(LangManager.Instance.CurrentLang.ShowWindow);
-            showItem.Click += (s, e) => ShowWindow();
+            _trayShowItem = new NativeMenuItem(lang.ShowWindow);
+            _trayShowItem.Click += (_, _) => ShowWindow();
 
-            var option = new NativeMenuItem(LangManager.Instance.CurrentLang.Option);
-            option.Click += (s, e) =>ShowDialog_Option();
+            _trayOptionItem = new NativeMenuItem(lang.Option);
+            _trayOptionItem.Click += (_, _) => ShowDialog_Option();
 
-            var reset = new NativeMenuItem(LangManager.Instance.CurrentLang.Reindex);
-            reset.Click += (s, e) =>
+            _trayReindexItem = new NativeMenuItem(lang.Reindex);
+            _trayReindexItem.Click += (_, _) =>
             {
                 cache.Discard();
                 Reset();
             };
 
-            var about = new NativeMenuItem(LangManager.Instance.CurrentLang.About);
-            about.Click += (s, e) => Message.ShowWaringOk(AppInfomation.AboutTitle, AppInfomation.AboutInfo);
+            _trayAboutItem = new NativeMenuItem(lang.About);
+            _trayAboutItem.Click += (_, _) => Message.ShowWaringOk(AppInfomation.AboutTitle, AppInfomation.AboutInfo);
 
-            var autoStartItem = new NativeMenuItem(
-                StartUpUtils.IsStartUp?
-                LangManager.Instance.CurrentLang.DisableStartup:
-                LangManager.Instance.CurrentLang.EnableStartup
-                );
-            autoStartItem.Click += (s, e) => {
-       
-                StartUpUtils.SwitchStartUp();
-                if (StartUpUtils.IsStartUp)
-                {
-                    autoStartItem.Header = LangManager.Instance.CurrentLang.DisableStartup;
-                }
-                else
-                {
-                    autoStartItem.Header = LangManager.Instance.CurrentLang.EnableStartup;
-                }
+            var peekMenu = new NativeMenu();
 
+            _peekEnabledItem = new NativeMenuItem(lang.PeekEnabled)
+            {
+                ToggleType = NativeMenuItemToggleType.CheckBox,
+                IsChecked = true
+            };
+            _peekEnabledItem.Click += (_, _) =>
+            {
+                PeekDesktopHost.ToggleEnabled();
+                SchedulePeekTrayRefresh();
             };
 
-            var exitItem = new NativeMenuItem(LangManager.Instance.CurrentLang.Exit);
-            exitItem.Click += (s, e) => Exit();
+            _peekDoubleClickItem = new NativeMenuItem(lang.PeekDoubleClick)
+            {
+                ToggleType = NativeMenuItemToggleType.CheckBox,
+                IsChecked = false
+            };
+            _peekDoubleClickItem.Click += (_, _) =>
+            {
+                PeekDesktopHost.ToggleRequireDoubleClick();
+                SchedulePeekTrayRefresh();
+            };
 
-            menu.Add(showItem);
-            menu.Add(option);
-            menu.Add(reset);
-            menu.Add(about);
-            menu.Add(autoStartItem);
-            menu.Add(exitItem);
+            _peekTaskbarItem = new NativeMenuItem(lang.PeekTaskbarClick)
+            {
+                ToggleType = NativeMenuItemToggleType.CheckBox,
+                IsChecked = false
+            };
+            _peekTaskbarItem.Click += (_, _) =>
+            {
+                PeekDesktopHost.TogglePeekOnTaskbarClick();
+                SchedulePeekTrayRefresh();
+            };
+
+            _peekGameGuardItem = new NativeMenuItem(lang.PeekGameGuard)
+            {
+                ToggleType = NativeMenuItemToggleType.CheckBox,
+                IsChecked = true
+            };
+            _peekGameGuardItem.Click += (_, _) =>
+            {
+                PeekDesktopHost.TogglePauseWhileFullscreen();
+                SchedulePeekTrayRefresh();
+            };
+
+            _peekModeNativeItem = new NativeMenuItem(lang.PeekModeNative)
+            {
+                ToggleType = NativeMenuItemToggleType.Radio,
+                IsChecked = true
+            };
+            _peekModeNativeItem.Click += (_, _) =>
+            {
+                PeekDesktopHost.SetPeekMode(PeekMode.NativeShowDesktop);
+                SchedulePeekTrayRefresh();
+            };
+
+            _peekModeFlyItem = new NativeMenuItem(lang.PeekModeFlyAway)
+            {
+                ToggleType = NativeMenuItemToggleType.Radio,
+                IsChecked = false
+            };
+            _peekModeFlyItem.Click += (_, _) =>
+            {
+                PeekDesktopHost.SetPeekMode(PeekMode.FlyAway);
+                SchedulePeekTrayRefresh();
+            };
+
+            _peekModeMinItem = new NativeMenuItem(lang.PeekModeMinimize)
+            {
+                ToggleType = NativeMenuItemToggleType.Radio,
+                IsChecked = false
+            };
+            _peekModeMinItem.Click += (_, _) =>
+            {
+                PeekDesktopHost.SetPeekMode(PeekMode.Minimize);
+                SchedulePeekTrayRefresh();
+            };
+
+            peekMenu.Items.Add(_peekEnabledItem);
+            peekMenu.Items.Add(_peekDoubleClickItem);
+            peekMenu.Items.Add(_peekTaskbarItem);
+            peekMenu.Items.Add(_peekGameGuardItem);
+            peekMenu.Items.Add(new NativeMenuItemSeparator());
+            peekMenu.Items.Add(_peekModeNativeItem);
+            peekMenu.Items.Add(_peekModeFlyItem);
+            peekMenu.Items.Add(_peekModeMinItem);
+
+            _trayPeekRoot = new NativeMenuItem(lang.TrayPeekDesktop) { Menu = peekMenu };
+
+            _trayStartupItem = new NativeMenuItem(
+                StartUpUtils.IsStartUp ? lang.DisableStartup : lang.EnableStartup);
+            _trayStartupItem.Click += (_, _) =>
+            {
+                StartUpUtils.SwitchStartUp();
+                var L = LangManager.Instance.CurrentLang;
+                _trayStartupItem.Header = StartUpUtils.IsStartUp ? L.DisableStartup : L.EnableStartup;
+            };
+
+            _trayExitItem = new NativeMenuItem(lang.Exit);
+            _trayExitItem.Click += (_, _) => Exit();
+
+            menu.Items.Add(_trayShowItem);
+            menu.Items.Add(_trayOptionItem);
+            menu.Items.Add(_trayReindexItem);
+            menu.Items.Add(_trayAboutItem);
+            menu.Items.Add(_trayPeekRoot);
+            menu.Items.Add(_trayStartupItem);
+            menu.Items.Add(_trayExitItem);
 
             _trayIcon.Menu = menu;
-                      
 
-            // 单击事件
-            _trayIcon.Clicked += (s, e) =>
-            {
-               
-                ShowWindow();
-            };
+            _trayIcon.Clicked += (_, _) => ShowWindow();
 
-            // 确保TrayIcon可见
             _trayIcon.IsVisible = true;
+        }
+
+        /// <summary>
+        /// Delayed initialization of PeekDesktop after UI is shown.
+        /// </summary>
+        public void InitializePeekDesktopAfterUiShown()
+        {
+            if (!OperatingSystem.IsWindows())
+                return;
+
+            // Start PeekDesktop on background thread to avoid blocking UI
+            Task.Run(() =>
+            {
+                PeekDesktopHost.EnsureStartedIfEnabledInSettings();
+                Dispatcher.UIThread.InvokeAsync(() => RefreshPeekTrayChecks());
+            });
+        }
+
+        private void SchedulePeekTrayRefresh()
+        {
+            Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await Task.Delay(120);
+                RefreshPeekTrayChecks();
+            });
+        }
+
+        private void RefreshPeekTrayChecks()
+        {
+            if (!OperatingSystem.IsWindows())
+                return;
+
+            var s = PeekDesktopHost.SnapshotSettingsForMenu();
+            _peekEnabledItem.IsChecked = s.Enabled;
+            _peekDoubleClickItem.IsChecked = s.RequireDoubleClick;
+            _peekTaskbarItem.IsChecked = s.PeekOnTaskbarClick;
+            _peekGameGuardItem.IsChecked = s.PauseWhileFullscreenAppActive;
+            _peekModeNativeItem.IsChecked = s.PeekMode == PeekMode.NativeShowDesktop;
+            _peekModeFlyItem.IsChecked = s.PeekMode == PeekMode.FlyAway;
+            _peekModeMinItem.IsChecked = s.PeekMode == PeekMode.Minimize;
         }
 
         public void RefreshUILanguage()
         {
-            ((NativeMenuItem)_trayIcon.Menu.Items[0]).Header = LangManager.Instance.CurrentLang.ShowWindow;
-            ((NativeMenuItem)_trayIcon.Menu.Items[1]).Header = LangManager.Instance.CurrentLang.Option;
-            ((NativeMenuItem)_trayIcon.Menu.Items[2]).Header = LangManager.Instance.CurrentLang.Reindex;
-            ((NativeMenuItem)_trayIcon.Menu.Items[3]).Header = LangManager.Instance.CurrentLang.About;
-            ((NativeMenuItem)_trayIcon.Menu.Items[4]).Header = StartUpUtils.IsStartUp?
-                LangManager.Instance.CurrentLang.DisableStartup:
-                LangManager.Instance.CurrentLang.EnableStartup;
-            ((NativeMenuItem)_trayIcon.Menu.Items[5]).Header = LangManager.Instance.CurrentLang.Exit;
-            inputBox.Watermark = LangManager.Instance.CurrentLang.InputWaterMarkInput;
+            var lang = LangManager.Instance.CurrentLang;
+            _trayShowItem.Header = lang.ShowWindow;
+            _trayOptionItem.Header = lang.Option;
+            _trayReindexItem.Header = lang.Reindex;
+            _trayAboutItem.Header = lang.About;
+            _trayPeekRoot.Header = lang.TrayPeekDesktop;
+            _peekEnabledItem.Header = lang.PeekEnabled;
+            _peekDoubleClickItem.Header = lang.PeekDoubleClick;
+            _peekTaskbarItem.Header = lang.PeekTaskbarClick;
+            _peekGameGuardItem.Header = lang.PeekGameGuard;
+            _peekModeNativeItem.Header = lang.PeekModeNative;
+            _peekModeFlyItem.Header = lang.PeekModeFlyAway;
+            _peekModeMinItem.Header = lang.PeekModeMinimize;
+            _trayStartupItem.Header = StartUpUtils.IsStartUp ? lang.DisableStartup : lang.EnableStartup;
+            _trayExitItem.Header = lang.Exit;
+            inputBox.Watermark = lang.InputWaterMarkInput;
+            RefreshPeekTrayChecks();
         }
-
     }
 }

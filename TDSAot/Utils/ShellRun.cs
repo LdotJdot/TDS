@@ -1,92 +1,109 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Threading.Tasks;
-using TDSAot;
 using TDSAot.State;
 using TDSAot.Utils;
 
 namespace TDS.Utils
-{  
-    public class StartUpUtils
+{
+    public static class StartUpUtils
     {
-        [DllImport("ProxyLibs.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]//ansi统一
-        private static extern int CreateLink(string targetPath, string path, string arg, string workDir);
+        private const string RunKeyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+        private const string RegistryValueName = "TDS";
 
-        static string StartPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), Path.ChangeExtension(AppOption.CurrentFileName, ".lnk"));
-        public static bool IsStartUp => File.Exists(StartPath);
+        private static string LegacyShortcutPath =>
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup),
+                Path.ChangeExtension(AppOption.CurrentFileName, ".lnk"));
+
+        private static string StartupCommand
+        {
+            get
+            {
+                string exePath = Environment.ProcessPath;
+                if (string.IsNullOrWhiteSpace(exePath))
+                    exePath = Path.Combine(AppOption.CurrentFolder, AppOption.CurrentFileName);
+                return $"\"{exePath}\" --hide";
+            }
+        }
+
+        /// <summary>
+        /// True when HKCU Run contains our entry, or a legacy Startup-folder shortcut exists (pre-registry migration).
+        /// </summary>
+        public static bool IsStartUp
+        {
+            get
+            {
+                try
+                {
+                    using var key = Registry.CurrentUser.OpenSubKey(RunKeyPath);
+                    string? val = key?.GetValue(RegistryValueName) as string;
+                    if (!string.IsNullOrWhiteSpace(val)
+                        && string.Equals(val.Trim(), StartupCommand.Trim(), StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                return File.Exists(LegacyShortcutPath);
+            }
+        }
 
         public static void SwitchStartUp()
         {
             if (IsStartUp)
             {
-                RemoveStartUp();
+                UnregisterRunKey();
                 Message.ShowWaringOk("Success", "Auto startup removed.");
             }
             else
             {
                 try
                 {
-                    StartUp();
+                    RegisterRunKey();
                     Message.ShowWaringOk("Success", "Auto startup added.");
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Message.ShowWaringOk("Failed", "Failed to add to startup folder.");
+                    Message.ShowWaringOk("Failed", "Failed to update Windows startup.");
                 }
             }
         }
 
-        private static void StartUp()
+        private static void RegisterRunKey()
         {
+            TryDeleteLegacyShortcut();
+            using var key = Registry.CurrentUser.CreateSubKey(RunKeyPath)
+                ?? throw new InvalidOperationException("Run key unavailable.");
+            key.SetValue(RegistryValueName, StartupCommand);
+        }
 
-            var path = StartPath;
-            var appPath = Path.Combine(AppOption.CurrentFolder, AppOption.CurrentFileName);
-            RemoveStartUp();
-
-            var ptrTargetPath=Marshal.StringToHGlobalUni(path);
-            var ptrSourcePath=Marshal.StringToHGlobalUni(appPath);
-            var ptrArg=Marshal.StringToHGlobalUni("/hide");
-            var ptrWorkDir = Marshal.StringToHGlobalUni(AppOption.CurrentFolder);
-            var inpt=CreateLink(path, appPath, "/hide", AppOption.CurrentFolder);
-         }
-
-        private static void RemoveStartUp()
+        private static void UnregisterRunKey()
         {
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), Path.ChangeExtension(AppOption.CurrentFileName, ".lnk"));
             try
             {
-                File.Delete(path);
+                using var key = Registry.CurrentUser.OpenSubKey(RunKeyPath, writable: true);
+                key?.DeleteValue(RegistryValueName, throwOnMissingValue: false);
             }
             catch
             {
-
+                // ignore
             }
+
+            TryDeleteLegacyShortcut();
         }
 
-        // In many clients, the following way not work.
-        private void RegisterInStartup(bool isChecked)
+        private static void TryDeleteLegacyShortcut()
         {
-            // 不起作用
-            var path = Environment.ProcessPath;
-            if (Message.ShowYesNo("startup", "sure?"))
+            try
             {
-                RegistryKey? registryKey = Registry.CurrentUser.OpenSubKey
-                        ("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-                if (isChecked)
-                {
-
-                    registryKey?.SetValue("ApplicationName", Environment.ProcessPath);
-                }
-                else
-                {
-                    registryKey?.DeleteValue("ApplicationName");
-                }
+                if (File.Exists(LegacyShortcutPath))
+                    File.Delete(LegacyShortcutPath);
+            }
+            catch
+            {
+                // ignore
             }
         }
     }

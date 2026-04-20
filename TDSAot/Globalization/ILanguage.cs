@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,6 +26,15 @@ namespace TDS.Globalization
         public string DisableStartup { get; set; }
         public string EnableStartup { get; set; }
         public string Exit { get; set; }
+
+        public string TrayPeekDesktop { get; set; }
+        public string PeekEnabled { get; set; }
+        public string PeekDoubleClick { get; set; }
+        public string PeekTaskbarClick { get; set; }
+        public string PeekGameGuard { get; set; }
+        public string PeekModeNative { get; set; }
+        public string PeekModeFlyAway { get; set; }
+        public string PeekModeMinimize { get; set; }
 
         public string DefaultResultCount { get; set;     }
         public string DefaultResultCountTip { get; set;  }
