@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="file_index.cpp"><Filter>Source</Filter></ClCompile>
+    <ClCompile Include="search_worker.cpp"><Filter>Source</Filter></ClCompile>
+    <ClCompile Include="usn_volume.cpp"><Filter>Source</Filter></ClCompile>
+    <ClCompile Include="volumes.cpp"><Filter>Source</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="file_index.hpp"><Filter>Header</Filter></ClInclude>
+    <ClInclude Include="search_worker.hpp"><Filter>Header</Filter></ClInclude>
+    <ClInclude Include="tds_keyindex.hpp"><Filter>Header</Filter></ClInclude>
+    <ClInclude Include="usn_ntfs.hpp"><Filter>Header</Filter></ClInclude>
+    <ClInclude Include="usn_volume.hpp"><Filter>Header</Filter></ClInclude>
+    <ClInclude Include="volumes.hpp"><Filter>Header</Filter></ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source"><UniqueIdentifier>{a1a1a1a1-0001-0001-0001-000000000001}</UniqueIdentifier></Filter>
+    <Filter Include="Header"><UniqueIdentifier>{b1b1b1b1-0002-0002-0002-000000000002}</UniqueIdentifier></Filter>
+  </ItemGroup>
+</Project>
