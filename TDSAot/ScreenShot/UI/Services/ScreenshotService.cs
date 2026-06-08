@@ -84,13 +84,16 @@ public static class ScreenshotService
         var targetScreen = Win32CaptureService.GetScreenAtCursor(screens);
         var fullBitmap = capture.CaptureScreen(targetScreen);
         var screenBounds = targetScreen.Bounds;
-        var localBounds = new Rect(0, 0, screenBounds.Width, screenBounds.Height);
+        var physicalBounds = new PixelRect(
+            (int)screenBounds.X,
+            (int)screenBounds.Y,
+            (int)screenBounds.Width,
+            (int)screenBounds.Height);
 
         var tcs = new TaskCompletionSource<EditResult?>();
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            var win = new ScreenshotWindow(fullBitmap, localBounds, request);
-            win.Position = new PixelPoint((int)screenBounds.X, (int)screenBounds.Y);
+            var win = new ScreenshotWindow(fullBitmap, physicalBounds, targetScreen.DpiScale, request);
             win.Closed += (_, _) =>
             {
                 UnregisterActiveWindow(win);

@@ -6,8 +6,10 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using TDS.ScreenShot.Core.Capture;
 using TDS.ScreenShot.Core.Annotations;
 using TDS.ScreenShot.UI.Controls;
 using TDS.ScreenShot.UI.Models;
@@ -27,9 +29,11 @@ public sealed class ScreenshotWindow : Window
     public EditRequest Request { get; }
 
     private readonly WriteableBitmap _source;
-    private readonly Rect _captureBounds; // in window/pixel space
+    private readonly PixelRect _physicalBounds;
+    private Rect _captureBounds; // logical (DIP) client area, synced on Opened
+    private double _dpiScale;
 
-    private readonly Image _screenshotImage;       // Layer 1: single full-screen screenshot
+    private readonly ScreenshotBackground _screenshotImage; // Layer 1: full-screen capture
     private readonly Path _dimPath;                // Layer 2: dim overlay (Xor cutout in selection)
     private readonly Border _inputCatcher;         // Layer 3: outside-selection pointer catcher
     private readonly AnnotationCanvas _annoCanvas; // Layer 5: drawing surface
@@ -41,11 +45,13 @@ public sealed class ScreenshotWindow : Window
     private Rect _dragStartSelection;
     private Point _dragStartPoint;
 
-    public ScreenshotWindow(WriteableBitmap source, Rect captureBounds, EditRequest request)
+    public ScreenshotWindow(WriteableBitmap source, PixelRect physicalBounds, double initialDpiScale, EditRequest request)
     {
         Request = request;
         _source = source;
-        _captureBounds = captureBounds;
+        _physicalBounds = physicalBounds;
+        _dpiScale = initialDpiScale > 0 ? initialDpiScale : 1.0;
+        _captureBounds = new Rect(0, 0, physicalBounds.Width / _dpiScale, physicalBounds.Height / _dpiScale);
 
         // Window configuration: borderless, topmost, full coverage
         SystemDecorations = SystemDecorations.None;
@@ -57,19 +63,17 @@ public sealed class ScreenshotWindow : Window
         Background = Brushes.Transparent;
         ExtendClientAreaToDecorationsHint = false;
         SizeToContent = SizeToContent.Manual;
-        Position = new PixelPoint((int)captureBounds.X, (int)captureBounds.Y);
-        Width = captureBounds.Width;
-        Height = captureBounds.Height;
+        Position = new PixelPoint(physicalBounds.X, physicalBounds.Y);
+        Width = _captureBounds.Width;
+        Height = _captureBounds.Height;
         Cursor = new Cursor(StandardCursorType.Cross);
 
-        // Single screenshot layer: the dim overlay uses Xor to punch a hole so
-        // the selection area stays bright without a second Image / GPU texture.
-        _screenshotImage = new Image
+        _screenshotImage = new ScreenshotBackground
         {
             Source = source,
-            Stretch = Stretch.Fill,
-            Width = captureBounds.Width,
-            Height = captureBounds.Height,
+            SourcePixelRect = new Rect(0, 0, source.PixelSize.Width, source.PixelSize.Height),
+            Width = _captureBounds.Width,
+            Height = _captureBounds.Height,
             IsHitTestVisible = false,
         };
         _dimPath = new Path
@@ -81,11 +85,12 @@ public sealed class ScreenshotWindow : Window
         {
             SourceBitmap = source,
             SourceOffset = new Point(0, 0),
+            SourceDpiScale = _dpiScale,
             ActiveTool = request.InitialTool,
             CurrentStroke = request.DefaultStroke ?? Color.FromRgb(238, 32, 77),
             CurrentStrokeWidth = request.DefaultStrokeWidth,
-            Width = captureBounds.Width,
-            Height = captureBounds.Height,
+            Width = _captureBounds.Width,
+            Height = _captureBounds.Height,
             ClipToBounds = true,
             IsHitTestVisible = true,
             Focusable = true,
@@ -94,8 +99,8 @@ public sealed class ScreenshotWindow : Window
         {
             Background = Brushes.Transparent,
             IsHitTestVisible = true,
-            Width = captureBounds.Width,
-            Height = captureBounds.Height,
+            Width = _captureBounds.Width,
+            Height = _captureBounds.Height,
         };
         _toolbar = new ScreenshotToolbar(request) { IsVisible = false };
 
@@ -327,16 +332,67 @@ public sealed class ScreenshotWindow : Window
 
     private void OnScreenshotOpened(object? sender, EventArgs e)
     {
-        Activate();
-        Focus();
-        // HWND may not be ready on the first Opened tick; register Esc after layout.
+        ApplyScreenLayout();
+        // HWND + Screens API are ready after the first layout pass.
         Dispatcher.UIThread.Post(() =>
         {
+            ApplyScreenLayout();
             Activate();
             Focus();
             if (ScreenshotHost.CaptureMainWindow is { } main)
                 ScreenshotEscapeHotkey.Attach(this, main);
         }, DispatcherPriority.Loaded);
+    }
+
+    /// <summary>
+    /// Align window logical size with Avalonia's per-monitor scaling and force the
+    /// native window to cover the monitor in physical pixels.
+    /// </summary>
+    private void ApplyScreenLayout()
+    {
+        var anchor = new PixelPoint(_physicalBounds.X + 1, _physicalBounds.Y + 1);
+        var screen = Screens.ScreenFromPoint(anchor)
+                     ?? Screens.ScreenFromPoint(new PixelPoint(_physicalBounds.X, _physicalBounds.Y))
+                     ?? Screens.Primary;
+        if (screen != null && screen.Scaling > 0)
+            _dpiScale = screen.Scaling;
+
+        var logicalW = _physicalBounds.Width / _dpiScale;
+        var logicalH = _physicalBounds.Height / _dpiScale;
+        _captureBounds = new Rect(0, 0, logicalW, logicalH);
+
+        Position = new PixelPoint(_physicalBounds.X, _physicalBounds.Y);
+        Width = logicalW;
+        Height = logicalH;
+
+        ResizeLayoutChildren();
+        ApplyNativePhysicalBounds();
+        UpdateSelectionVisuals();
+    }
+
+    private void ResizeLayoutChildren()
+    {
+        _screenshotImage.Width = _captureBounds.Width;
+        _screenshotImage.Height = _captureBounds.Height;
+        _screenshotImage.SourcePixelRect = new Rect(0, 0, _source.PixelSize.Width, _source.PixelSize.Height);
+        _inputCatcher.Width = _captureBounds.Width;
+        _inputCatcher.Height = _captureBounds.Height;
+        _annoCanvas.Width = _captureBounds.Width;
+        _annoCanvas.Height = _captureBounds.Height;
+        _annoCanvas.SourceDpiScale = _dpiScale;
+    }
+
+    private void ApplyNativePhysicalBounds()
+    {
+        if (TryGetPlatformHandle()?.Handle is not IntPtr hwnd || hwnd == IntPtr.Zero)
+            return;
+
+        Win32WindowPlacement.SetPhysicalBounds(
+            hwnd,
+            _physicalBounds.X,
+            _physicalBounds.Y,
+            _physicalBounds.Width,
+            _physicalBounds.Height);
     }
 
     private void OnScreenshotClosed(object? sender, EventArgs e)
@@ -396,10 +452,16 @@ public sealed class ScreenshotWindow : Window
 
     private Bitmap BuildResultBitmap(Rect captureRect)
     {
-        int w = (int)captureRect.Width;
-        int h = (int)captureRect.Height;
+        // Selection is in logical (DIP) coords; the source bitmap is physical pixels.
+        var physicalRect = new Rect(
+            captureRect.X * _dpiScale,
+            captureRect.Y * _dpiScale,
+            captureRect.Width * _dpiScale,
+            captureRect.Height * _dpiScale);
+        int w = (int)physicalRect.Width;
+        int h = (int)physicalRect.Height;
         // 1) Crop the source 1:1 to a fresh bitmap.
-        var cropped = BitmapCropper.Crop(_source, new Rect(captureRect.X, captureRect.Y, w, h));
+        var cropped = BitmapCropper.Crop(_source, new Rect(physicalRect.X, physicalRect.Y, w, h));
 
         // 2) Render annotations on top of the 1:1 crop. AnnotationCanvas only
         //    draws markup (not the background); mosaic still needs SourceBitmap
@@ -420,12 +482,21 @@ public sealed class ScreenshotWindow : Window
         };
         visual.Children.Add(bg);
         Canvas.SetLeft(bg, 0); Canvas.SetTop(bg, 0);
-        visual.Children.Add(_annoCanvas);
+        var annoHost = new Canvas
+        {
+            Width = _captureBounds.Width,
+            Height = _captureBounds.Height,
+            RenderTransform = new ScaleTransform(_dpiScale, _dpiScale),
+        };
+        annoHost.Children.Add(_annoCanvas);
         _annoCanvas.Clip = null;
         _annoCanvas.Width = _captureBounds.Width;
         _annoCanvas.Height = _captureBounds.Height;
-        Canvas.SetLeft(_annoCanvas, -captureRect.X);
-        Canvas.SetTop(_annoCanvas, -captureRect.Y);
+        Canvas.SetLeft(_annoCanvas, 0);
+        Canvas.SetTop(_annoCanvas, 0);
+        visual.Children.Add(annoHost);
+        Canvas.SetLeft(annoHost, -captureRect.X * _dpiScale);
+        Canvas.SetTop(annoHost, -captureRect.Y * _dpiScale);
         try
         {
             visual.Measure(new Size(w, h));
@@ -437,7 +508,8 @@ public sealed class ScreenshotWindow : Window
         finally
         {
             (cropped as IDisposable)?.Dispose();
-            visual.Children.Remove(_annoCanvas);
+            annoHost.Children.Remove(_annoCanvas);
+            visual.Children.Remove(annoHost);
             if (origParent != null)
             {
                 if (origIndex >= 0 && origIndex <= origParent.Children.Count)

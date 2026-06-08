@@ -73,6 +73,9 @@ public sealed class AnnotationCanvas : Control
         set => SetValue(SourceOffsetProperty, value);
     }
 
+    /// <summary>Logical-to-physical scale when sampling <see cref="SourceBitmap"/> (1.0 = 100% DPI).</summary>
+    public double SourceDpiScale { get; set; } = 1.0;
+
     public List<Annotation> Items { get; } = new();
     public int? SelectedIndex { get; private set; }
     public int UndoLimit { get; set; } = 50;
@@ -245,17 +248,18 @@ public sealed class AnnotationCanvas : Control
         int sw = src.PixelSize.Width;
         int sh = src.PixelSize.Height;
         var origin = SourceOffset;
+        double scale = SourceDpiScale;
         using var lk = src.Lock();
         unsafe
         {
             byte* ptr = (byte*)lk.Address;
             int srcStride = lk.RowBytes;
-            int bs = Math.Max(4, m.BlockSize);
+            int bs = Math.Max(4, (int)Math.Round(m.BlockSize * scale));
             var rect = m.Rect;
-            int x0 = Math.Max(0, (int)Math.Floor(rect.X + origin.X));
-            int y0 = Math.Max(0, (int)Math.Floor(rect.Y + origin.Y));
-            int x1 = Math.Min(sw, (int)Math.Ceiling(rect.Right + origin.X));
-            int y1 = Math.Min(sh, (int)Math.Ceiling(rect.Bottom + origin.Y));
+            int x0 = Math.Max(0, (int)Math.Floor((rect.X + origin.X) * scale));
+            int y0 = Math.Max(0, (int)Math.Floor((rect.Y + origin.Y) * scale));
+            int x1 = Math.Min(sw, (int)Math.Ceiling((rect.Right + origin.X) * scale));
+            int y1 = Math.Min(sh, (int)Math.Ceiling((rect.Bottom + origin.Y) * scale));
             for (int by = y0; by < y1; by += bs)
             {
                 int blockH = Math.Min(bs, y1 - by);
@@ -285,7 +289,7 @@ public sealed class AnnotationCanvas : Control
                     // Fresh brush per tile: reusing SolidColorBrush and mutating Color
                     // leaves every block at the default black during one Render pass.
                     ctx.FillRectangle(new SolidColorBrush(color),
-                        new Rect(bx - origin.X, by - origin.Y, blockW, blockH));
+                        new Rect(bx / scale - origin.X, by / scale - origin.Y, blockW / scale, blockH / scale));
                 }
             }
         }

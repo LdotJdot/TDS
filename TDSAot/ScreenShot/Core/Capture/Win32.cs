@@ -13,8 +13,13 @@ internal static class Win32
     private const string User32 = "user32.dll";
     private const string Gdi32 = "gdi32.dll";
     private const string Kernel32 = "kernel32.dll";
+    private const string Shcore = "Shcore.dll";
 
+    public const int MDT_EFFECTIVE_DPI = 0;
     public const int SRCCOPY = 0x00CC0020;
+    public const uint CAPTUREBLT = 0x40000000;
+    public const uint SWP_NOZORDER = 0x0004;
+    public const uint SWP_SHOWWINDOW = 0x0040;
     public const int DIB_RGB_COLORS = 0;
     public const int BI_RGB = 0;
 
@@ -121,4 +126,18 @@ internal static class Win32
     [DllImport(User32, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool GetCursorPos(out POINT lpPoint);
+
+    [DllImport(Shcore, SetLastError = true)]
+    public static extern int GetDpiForMonitor(IntPtr hMonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+    [DllImport(User32, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetWindowPos(
+        IntPtr hWnd,
+        IntPtr hWndInsertAfter,
+        int x,
+        int y,
+        int cx,
+        int cy,
+        uint uFlags);
 }

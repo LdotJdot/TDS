@@ -22,12 +22,13 @@ public sealed class Win32CaptureService : ICaptureService
         int top = list.Min(s => (int)s.Bounds.Y);
         int right = list.Max(s => (int)s.Bounds.Right);
         int bottom = list.Max(s => (int)s.Bounds.Bottom);
+        var primaryScale = list.FirstOrDefault(s => s.IsPrimary)?.DpiScale ?? list[0].DpiScale;
         list.Add(new ScreenInfo(
             Handle: IntPtr.Zero,
             DeviceName: "VirtualDesktop",
             Bounds: new Rect(left, top, right - left, bottom - top),
             WorkingArea: new Rect(left, top, right - left, bottom - top),
-            DpiScale: 1.0,
+            DpiScale: primaryScale,
             IsPrimary: true));
         return list;
     }
@@ -47,12 +48,19 @@ public sealed class Win32CaptureService : ICaptureService
                 DeviceName: info.szDevice,
                 Bounds: bounds,
                 WorkingArea: work,
-                DpiScale: 1.0,
+                DpiScale: GetMonitorDpiScale(hMonitor),
                 IsPrimary: (info.dwFlags & 1) != 0));
             return true;
         };
 
         Win32.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, callback, IntPtr.Zero);
+    }
+
+    private static double GetMonitorDpiScale(IntPtr hMonitor)
+    {
+        if (Win32.GetDpiForMonitor(hMonitor, Win32.MDT_EFFECTIVE_DPI, out var dpiX, out _) == 0 && dpiX > 0)
+            return dpiX / 96.0;
+        return 1.0;
     }
 
     /// <summary>Returns the monitor under the cursor, or primary / first physical screen.</summary>
@@ -95,7 +103,7 @@ public sealed class Win32CaptureService : ICaptureService
             bmp = Win32.CreateCompatibleBitmap(screenDc, w, h);
             old = Win32.SelectObject(memDc, bmp);
 
-            if (!Win32.BitBlt(memDc, 0, 0, w, h, screenDc, (int)screen.Bounds.X, (int)screen.Bounds.Y, Win32.SRCCOPY))
+            if (!Win32.BitBlt(memDc, 0, 0, w, h, screenDc, (int)screen.Bounds.X, (int)screen.Bounds.Y, Win32.SRCCOPY | (int)Win32.CAPTUREBLT))
                 throw new InvalidOperationException("BitBlt failed.");
 
             // GetDIBits requires positive biHeight for top-down bitmap - use negative for top-down BGRA
@@ -123,6 +131,8 @@ public sealed class Win32CaptureService : ICaptureService
             // GDI gives us BGRA bytes (bottom-up in memory when biHeight > 0; top-down with negative biHeight).
             // Our biHeight is negative so the data is top-down in BGRA byte order. Avalonia expects
             // WriteableBitmap.Format = PixelFormat.Bgra8888 with a top-down buffer.
+            // Bitmap DPI metadata is not used for layout — ScreenshotBackground maps pixels
+            // explicitly via DrawImage. Keep 96 DPI so pixel size == layout pixel count.
             var wb = new WriteableBitmap(
                 new PixelSize(w, h),
                 new Vector(96, 96),
