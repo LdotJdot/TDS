@@ -1,4 +1,4 @@
-using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
 using ConfigurationReader;
 using System;
@@ -79,7 +79,7 @@ namespace TDSAot.State
                     var screenshotEnabled = configuration.GetBool(nameof(ScreenshotEnabled));
                     if (screenshotEnabled == null)
                     {
-                        screenshotEnabled = false;
+                        screenshotEnabled = true;
                         configuration.Set(nameof(ScreenshotEnabled), screenshotEnabled);
                         configuration.Save();
                     }
@@ -199,7 +199,7 @@ namespace TDSAot.State
             Findmax = 100;
             HotKey = 192;
             ModifierKey = 2;
-            ScreenshotEnabled = false;
+            ScreenshotEnabled = true;
             ScreenshotHotKey = 65;
             ScreenshotModifierKey = 5;
             ScreenshotSavePath = CurrentFolder;

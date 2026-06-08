@@ -51,28 +51,28 @@ Now it is a single .exe file around 20MB!
 ## Region Screenshot (integrated)
 ## 区域截屏（整合说明）
 
-TDS includes a **region screenshot** tool under `TDSAot/ScreenShot/`. It is independent from the main search window: separate hotkey, separate fullscreen UI, and no impact on file search.
+TDS includes a **region screenshot** tool under `TDSAot/ScreenShot/`. It is **enabled by default** with hotkey **Alt + Shift + A**. It is independent from the main search window: separate hotkey, separate fullscreen UI, and no impact on file search.
 
-TDS 内置**区域截屏**功能，源码位于 `TDSAot/ScreenShot/`。与主搜索窗口**相互独立**：独立快捷键、独立全屏界面，不影响文件搜索。
-
-### How to enable
-### 如何启用
-
-1. Open **Options** from the tray menu or main window.
-1. 从托盘菜单或主窗口打开**选项**。
-2. Check **Enable region screenshot** / **启用区域截屏**, adjust the hotkey if needed, then click **OK**.
-2. 勾选**启用区域截屏**，可按需修改快捷键，点击**确定**保存。
-3. The screenshot hotkey is registered only while the feature is enabled.
-3. 仅在该功能开启时才会注册截屏全局热键。
+TDS 内置**区域截屏**功能，源码位于 `TDSAot/ScreenShot/`，**默认已启用**，默认快捷键为 **Alt + Shift + A**。与主搜索窗口**相互独立**：独立快捷键、独立全屏界面，不影响文件搜索。
 
 ### Default hotkey
 ### 默认快捷键
 
-- **Alt + Shift + A** — independent from the main window hotkey (**Ctrl + ~**).
-- **Alt + Shift + A** — 与主窗口唤出快捷键（**Ctrl + ~**）互不冲突。
+- **Alt + Shift + A** — enabled by default; independent from the main window hotkey (**Ctrl + ~**).
+- **Alt + Shift + A** — 默认启用；与主窗口唤出快捷键（**Ctrl + ~**）互不冲突。
 
 You can change the key and modifier in Settings (letters A–Z, F1–F12, and modifier combinations such as Ctrl+Shift / Alt+Shift).
 可在设置中修改按键与修饰键（字母 A–Z、F1–F12，以及 Ctrl+Shift、Alt+Shift 等组合）。
+
+### Settings
+### 设置
+
+1. Open **Options** from the tray menu or main window.
+1. 从托盘菜单或主窗口打开**选项**。
+2. **Enable region screenshot** / **启用区域截屏** is checked by default. Uncheck to disable, or adjust the hotkey and save folder, then click **OK**.
+2. **启用区域截屏**默认已勾选。可取消勾选以关闭，或修改快捷键与保存目录，点击**确定**保存。
+3. The screenshot hotkey is registered only while the feature is enabled.
+3. 仅在该功能开启时才会注册截屏全局热键。
 
 ### Capture workflow
 ### 截屏流程
@@ -97,7 +97,7 @@ Screenshot options are stored in the same `conf.json` as other TDS settings:
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `ScreenshotEnabled` | `false` | Enable region screenshot / 启用区域截屏 |
+| `ScreenshotEnabled` | `true` | Enable region screenshot / 启用区域截屏 |
 | `ScreenshotHotKey` | `65` (A) | Virtual key code / 虚拟键码 |
 | `ScreenshotModifierKey` | `5` (Alt+Shift) | Modifier flags / 修饰键组合 |
 
@@ -132,8 +132,8 @@ Screenshot options are stored in the same `conf.json` as other TDS settings:
 - **复制文件**：右键单击文件并选择"复制"将其复制到剪贴板。
 - **View Properties**: Right-click on a file and select "Properties" to view detailed information about the file.
 - **查看属性**：右键单击文件并选择"属性"以查看文件的详细信息。
-- **Hotkey**: The default activation window key is **Ctrl+~** (changeable in Settings or `conf.json`). Screenshot uses **Alt+Shift+A** when enabled (see **Region Screenshot** above). The program minimizes to the system tray after startup by default. ESC focuses and selects the input box text; press again to clear. Ctrl opens the context menu of the selected item.
-- **热键**：默认唤出主窗口为 **Ctrl+~**（可在设置或 `conf.json` 中修改）。截屏功能开启后默认为 **Alt+Shift+A**（详见上文**区域截屏**）。程序启动后默认最小化到系统托盘。ESC 可快速聚焦并选中输入框文本，再按一次清除。Ctrl 键打开选中项的上下文菜单。
+- **Hotkey**: The default activation window key is **Ctrl+~** (changeable in Settings or `conf.json`). Region screenshot is **enabled by default** with hotkey **Alt+Shift+A** (see **Region Screenshot** above). The program minimizes to the system tray after startup by default. ESC focuses and selects the input box text; press again to clear. Ctrl opens the context menu of the selected item.
+- **热键**：默认唤出主窗口为 **Ctrl+~**（可在设置或 `conf.json` 中修改）。区域截屏**默认启用**，快捷键为 **Alt+Shift+A**（详见上文**区域截屏**）。程序启动后默认最小化到系统托盘。ESC 可快速聚焦并选中输入框文本，再按一次清除。Ctrl 键打开选中项的上下文菜单。
 
 ## Contributing
 ## 贡献
