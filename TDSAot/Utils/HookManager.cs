@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using TDSAot.Utils;
 
@@ -12,31 +12,31 @@ internal class GlobalHotkey : IDisposable
     public GlobalHotkey(nint hwd)
     {
         this.handle = hwd;
-        UnregisterHotKey(handle, HotKeyId);
+        UnregisterHotKey(handle, ShowWindowHotKeyId);
+        UnregisterHotKey(handle, ScreenshotHotKeyId);
     }
 
-    /// <summary>
-    /// Registers a global hotkey for showing the window.
-    /// Wraps the RegisterHotKey method.
-    /// </summary>
+    /// <summary>Registers the main TDS show/hide hotkey.</summary>
     public void RegisterGlobalHotKey(uint key, uint keyModifiers)
     {
-        UnregisterGlobalHotKey();
-        var result = RegisterHotKey(handle, HotKeyId, (uint)keyModifiers, (uint)key);
+        UnregisterHotKey(handle, ShowWindowHotKeyId);
+        var result = RegisterHotKey(handle, ShowWindowHotKeyId, keyModifiers, key);
         if (!result)
-        {
             Message.ShowWaringOk("Hotkey", "Hotkey registration failed. Check for hotkey conflicts.\r\n\r\n");
-        }
     }
 
-    /// <summary>
-    /// Deregisters a global shortcut.
-    /// Wraps the UnregisterHotKey method.
-    /// </summary>
-    public void UnregisterGlobalHotKey()
+    /// <summary>Registers the screenshot hotkey (independent id).</summary>
+    public bool TryRegisterScreenshotHotKey(uint key, uint keyModifiers)
     {
-        UnregisterHotKey(handle, HotKeyId);
+        UnregisterHotKey(handle, ScreenshotHotKeyId);
+        return RegisterHotKey(handle, ScreenshotHotKeyId, keyModifiers, key);
     }
+
+    public void UnregisterScreenshotHotKey()
+        => UnregisterHotKey(handle, ScreenshotHotKeyId);
+
+    public void UnregisterGlobalHotKey()
+        => UnregisterHotKey(handle, ShowWindowHotKeyId);
 
     [DllImport("user32.dll")]
     private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -44,11 +44,14 @@ internal class GlobalHotkey : IDisposable
     [DllImport("user32.dll")]
     private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-    internal const int HotKeyId = 9527; // ID for the hotkey to be registered.
-    internal const int HotKeyMessage = 0x0312; // Message ID for the hotkey message
+    internal const int ShowWindowHotKeyId = 9527;
+    internal const int ScreenshotHotKeyId = 9528;
+    internal const int HotKeyId = ShowWindowHotKeyId; // backward-compatible alias
+    internal const int HotKeyMessage = 0x0312;
 
     public void Dispose()
     {
         UnregisterGlobalHotKey();
+        UnregisterScreenshotHotKey();
     }
 }

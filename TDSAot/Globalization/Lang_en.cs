@@ -28,18 +28,7 @@ namespace TDS.Globalization
         public string Reindex { get; set; } = "Reindex";
         public string About { get; set; } = "About...";
 
-        public string DisableStartup { get; set; } = "Disable run at Windows startup";
-        public string EnableStartup { get; set; } = "Enable run at Windows startup";
         public string Exit { get; set; } = "Exit";
-
-        public string TrayPeekDesktop { get; set; } = "Peek Desktop";
-        public string PeekEnabled { get; set; } = "Enabled";
-        public string PeekDoubleClick { get; set; } = "Require double-click";
-        public string PeekTaskbarClick { get; set; } = "Peek on taskbar click";
-        public string PeekGameGuard { get; set; } = "Pause while fullscreen / gaming";
-        public string PeekModeNative { get; set; } = "Mode: Native show desktop";
-        public string PeekModeFlyAway { get; set; } = "Mode: Fly away (experimental)";
-        public string PeekModeMinimize { get; set; } = "Mode: Minimize windows";
 
         //Settings
         public string DefaultResultCount { get; set; } = "Default Result Count:";
@@ -50,6 +39,19 @@ namespace TDS.Globalization
         public string ActivateHotkeySetting { get; set; } = "Activation Hotkey:";
         public string ModifyHotkeySetting { get; set; } = "Modifier Key:";
         public string ModifyHotkeySettingDesc { get; set; } = "Set the hotkey combination to activate the application window";
+        public string ScreenshotSetting { get; set; } = "Screenshot";
+        public string ScreenshotEnabled { get; set; } = "Enable region screenshot";
+        public string ScreenshotEnabledDesc { get; set; } = "Dedicated hotkey opens capture; Confirm copies to clipboard; Save opens a dialog; press the hotkey again while editing to auto-save to the folder below";
+        public string ScreenshotHotkeySetting { get; set; } = "Screenshot hotkey:";
+        public string ScreenshotModifierSetting { get; set; } = "Screenshot modifier:";
+        public string ScreenshotHotkeyDesc { get; set; } = "Default Alt+Shift+A, independent from the main Ctrl+~ hotkey";
+        public string ScreenshotSavePath { get; set; } = "Auto-save folder:";
+        public string ScreenshotSavePathDesc { get; set; } = "Press the screenshot hotkey again while editing to auto-save a PNG here; the folder is created if missing (default: application folder)";
+        public string ScreenshotSaveFailed { get; set; } = "Screenshot save failed";
+        public string ScreenshotSaveNoSelection { get; set; } = "Select a capture region before saving.";
+        public string InterfaceSetting { get; set; } = "Interface Settings";
+        public string LanguageSetting { get; set; } = "Language:";
+        public string LanguageSettingDesc { get; set; } = "Choose the display language for the application";
         public string BehaviorSettings { get; set; } = "Behavior Settings";
         public string AutoHide { get; set; } = "Hide on startup";
         public string AutoHideDesc { get; set; } = "Automatically hide to the system tray when the app starts";

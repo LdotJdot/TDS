@@ -51,7 +51,13 @@ public partial class SettingWindow : Window
         svm.AutoHide         = mainWindow.Option.AutoHide;
         svm.AutoAdjust       = mainWindow.Option.AutoAdjust;
         svm.AlwaysTop        = mainWindow.Option.AlwaysTop;
-        
+        svm.ScreenshotEnabled = mainWindow.Option.ScreenshotEnabled;
+        svm.ScreenshotHotKey = KeyTransfer.ReverseTransKey(mainWindow.Option.ScreenshotHotKey);
+        svm.ScreenshotModifierKey = KeyTransfer.ReverseTransKey(mainWindow.Option.ScreenshotModifierKey);
+        svm.ScreenshotSavePath = string.IsNullOrWhiteSpace(mainWindow.Option.ScreenshotSavePath)
+            ? AppOption.CurrentFolder
+            : mainWindow.Option.ScreenshotSavePath;
+
         svm.Lang = LangManager.Instance.CurrentLang;
         svm.LangStrs = LangManager.Instance.GetAvailableLangs().Select(o => o.ReadableName);
         svm.LangStr = svm.Lang.ReadableName;
@@ -78,6 +84,12 @@ public partial class SettingWindow : Window
         mainWindow.Option.AutoHide         = svm.AutoHide;
         mainWindow.Option.AutoAdjust       = svm.AutoAdjust;
         mainWindow.Option.AlwaysTop        = svm.AlwaysTop;
+        mainWindow.Option.ScreenshotEnabled = svm.ScreenshotEnabled;
+        mainWindow.Option.ScreenshotHotKey = KeyTransfer.TransKey(svm.ScreenshotHotKey);
+        mainWindow.Option.ScreenshotModifierKey = KeyTransfer.TransKey(svm.ScreenshotModifierKey);
+        mainWindow.Option.ScreenshotSavePath = string.IsNullOrWhiteSpace(svm.ScreenshotSavePath)
+            ? AppOption.CurrentFolder
+            : svm.ScreenshotSavePath.Trim();
         ChangeLang(svm);
         ChangeTheme(svm);
         mainWindow.Option.Save();
@@ -125,7 +137,7 @@ public partial class SettingWindow : Window
 
     private void OnAppKeyDown(object? sender, KeyEventArgs e)
     {
-        // 处理按键按下事件
+        // ???????????????
 
         var key = e.Key;
         

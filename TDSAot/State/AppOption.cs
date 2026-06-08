@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
 using ConfigurationReader;
 using System;
@@ -21,6 +21,10 @@ namespace TDSAot.State
         private int findmax = 100;
         private uint hotKey = 192;
         private uint modifierKey = 2;
+        private bool screenshotEnabled = false;
+        private uint screenshotHotKey = 65;       // A
+        private uint screenshotModifierKey = 5;   // Alt+Shift
+        private string screenshotSavePath = "";
         private bool hideAfterStarted = false;
         private bool usingCache = true;
         private bool autoHide = true;
@@ -71,6 +75,42 @@ namespace TDSAot.State
                         configuration.Save();
                     }
                     else ModifierKey = (uint)modifierKey.Value;
+
+                    var screenshotEnabled = configuration.GetBool(nameof(ScreenshotEnabled));
+                    if (screenshotEnabled == null)
+                    {
+                        screenshotEnabled = false;
+                        configuration.Set(nameof(ScreenshotEnabled), screenshotEnabled);
+                        configuration.Save();
+                    }
+                    else ScreenshotEnabled = screenshotEnabled.Value;
+
+                    var screenshotHotKey = configuration.GetInt(nameof(ScreenshotHotKey));
+                    if (screenshotHotKey == null)
+                    {
+                        screenshotHotKey = 65;
+                        configuration.Set(nameof(ScreenshotHotKey), screenshotHotKey);
+                        configuration.Save();
+                    }
+                    else ScreenshotHotKey = (uint)screenshotHotKey.Value;
+
+                    var screenshotModifierKey = configuration.GetInt(nameof(ScreenshotModifierKey));
+                    if (screenshotModifierKey == null)
+                    {
+                        screenshotModifierKey = 5;
+                        configuration.Set(nameof(ScreenshotModifierKey), screenshotModifierKey);
+                        configuration.Save();
+                    }
+                    else ScreenshotModifierKey = (uint)screenshotModifierKey.Value;
+
+                    var screenshotSavePath = configuration.GetString(nameof(ScreenshotSavePath));
+                    if (screenshotSavePath == null)
+                    {
+                        screenshotSavePath = CurrentFolder;
+                        configuration.Set(nameof(ScreenshotSavePath), screenshotSavePath);
+                        configuration.Save();
+                    }
+                    else ScreenshotSavePath = screenshotSavePath;
 
                     var startHide = configuration.GetBool(nameof(HideAfterStarted));
                     if (startHide == null)
@@ -159,6 +199,10 @@ namespace TDSAot.State
             Findmax = 100;
             HotKey = 192;
             ModifierKey = 2;
+            ScreenshotEnabled = false;
+            ScreenshotHotKey = 65;
+            ScreenshotModifierKey = 5;
+            ScreenshotSavePath = CurrentFolder;
             HideAfterStarted = false;
             UsingCache = true;
             AutoHide = true;
@@ -173,6 +217,10 @@ namespace TDSAot.State
         internal int Findmax { get => findmax; set { findmax = value; configuration?.Set(nameof(Findmax), findmax); } }
         internal uint HotKey { get => hotKey; set { hotKey = value; configuration?.Set(nameof(HotKey), hotKey); } }
         internal uint ModifierKey { get => modifierKey; set { modifierKey = value; configuration?.Set(nameof(ModifierKey), modifierKey); } }
+        internal bool ScreenshotEnabled { get => screenshotEnabled; set { screenshotEnabled = value; configuration?.Set(nameof(ScreenshotEnabled), screenshotEnabled); } }
+        internal uint ScreenshotHotKey { get => screenshotHotKey; set { screenshotHotKey = value; configuration?.Set(nameof(ScreenshotHotKey), screenshotHotKey); } }
+        internal uint ScreenshotModifierKey { get => screenshotModifierKey; set { screenshotModifierKey = value; configuration?.Set(nameof(ScreenshotModifierKey), screenshotModifierKey); } }
+        internal string ScreenshotSavePath { get => screenshotSavePath; set { screenshotSavePath = value ?? ""; configuration?.Set(nameof(ScreenshotSavePath), screenshotSavePath); } }
         internal bool HideAfterStarted { get => hideAfterStarted; set { hideAfterStarted = value; configuration?.Set(nameof(HideAfterStarted), hideAfterStarted); } }
         internal bool UsingCache { get => usingCache; set { usingCache = value; configuration?.Set(nameof(UsingCache), usingCache); } }
         internal ThemeType Theme

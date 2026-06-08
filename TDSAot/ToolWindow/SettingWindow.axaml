@@ -8,9 +8,9 @@
         x:Class="TDS.SettingWindow"
         Title="Settings"
         Width="420"
-        Height="500"
+        Height="560"
         MinWidth="420"
-        MinHeight="500"
+        MinHeight="560"
         WindowStartupLocation="CenterOwner"
         CanResize="True"
         WindowState="Normal"
@@ -58,6 +58,11 @@
 			<Setter Property="Width" Value="140" />
 			<Setter Property="HorizontalAlignment" Value="Left" />
 			<Setter Property="Margin" Value="0 2 0 0" />
+		</Style>
+
+		<Style Selector="TextBox.screenshot-path">
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="MinWidth" Value="200" />
 		</Style>
 
 		<Style Selector="CheckBox">
@@ -185,6 +190,97 @@
 					</Grid>
 				</StackPanel>
 
+				<!-- Screenshot Settings -->
+				<StackPanel Classes="setting-group">
+					<TextBlock Text="{Binding Lang.ScreenshotSetting, Mode=OneWay}" Classes="setting-title" />
+
+					<CheckBox Content="{Binding Lang.ScreenshotEnabled, Mode=OneWay}" IsChecked="{Binding ScreenshotEnabled}" />
+					<TextBlock Text="{Binding Lang.ScreenshotEnabledDesc, Mode=OneWay}" Classes="setting-description" />
+
+					<Grid Margin="0,8,0,0" IsEnabled="{Binding ScreenshotEnabled}">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
+
+						<TextBlock Text="{Binding Lang.ScreenshotHotkeySetting, Mode=OneWay}" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,0,8,0" />
+						<ComboBox SelectedItem="{Binding ScreenshotHotKey}" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left">
+							<ComboBox.Items>
+								<x:String>A</x:String>
+								<x:String>B</x:String>
+								<x:String>C</x:String>
+								<x:String>D</x:String>
+								<x:String>E</x:String>
+								<x:String>F</x:String>
+								<x:String>G</x:String>
+								<x:String>H</x:String>
+								<x:String>I</x:String>
+								<x:String>J</x:String>
+								<x:String>K</x:String>
+								<x:String>L</x:String>
+								<x:String>M</x:String>
+								<x:String>N</x:String>
+								<x:String>O</x:String>
+								<x:String>P</x:String>
+								<x:String>Q</x:String>
+								<x:String>R</x:String>
+								<x:String>S</x:String>
+								<x:String>T</x:String>
+								<x:String>U</x:String>
+								<x:String>V</x:String>
+								<x:String>W</x:String>
+								<x:String>X</x:String>
+								<x:String>Y</x:String>
+								<x:String>Z</x:String>
+								<x:String>F1</x:String>
+								<x:String>F2</x:String>
+								<x:String>F3</x:String>
+								<x:String>F4</x:String>
+								<x:String>F5</x:String>
+								<x:String>F6</x:String>
+								<x:String>F7</x:String>
+								<x:String>F8</x:String>
+								<x:String>F9</x:String>
+								<x:String>F10</x:String>
+								<x:String>F11</x:String>
+								<x:String>F12</x:String>
+							</ComboBox.Items>
+						</ComboBox>
+
+						<TextBlock Text="{Binding Lang.ScreenshotModifierSetting, Mode=OneWay}" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1" Margin="0,6,8,0" />
+						<ComboBox SelectedItem="{Binding ScreenshotModifierKey}" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" Margin="0,6,0,0">
+							<ComboBox.Items>
+								<x:String>Ctrl+Shift</x:String>
+								<x:String>Alt+Shift</x:String>
+								<x:String>Ctrl</x:String>
+								<x:String>Alt</x:String>
+								<x:String>Shift</x:String>
+								<x:String>Win</x:String>
+							</ComboBox.Items>
+						</ComboBox>
+
+						<TextBlock Text="{Binding Lang.ScreenshotHotkeyDesc, Mode=OneWay}" Classes="setting-description"
+								   Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" />
+
+						<TextBlock Text="{Binding Lang.ScreenshotSavePath, Mode=OneWay}" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3" Margin="0,8,8,0" />
+						<TextBox Text="{Binding ScreenshotSavePath, Mode=TwoWay}"
+								 Classes="screenshot-path"
+								 Grid.Column="1" Grid.Row="3"
+								 Margin="0,8,0,0"
+								 Watermark="e.g. C:\Screenshots" />
+
+						<TextBlock Text="{Binding Lang.ScreenshotSavePathDesc, Mode=OneWay}" Classes="setting-description"
+								   Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4" />
+					</Grid>
+				</StackPanel>
+
 				<!-- Behavior Settings -->
 				<StackPanel Classes="setting-group">
 					<TextBlock Text="{Binding Lang.BehaviorSettings, Mode=OneWay}" Classes="setting-title" />
@@ -207,7 +303,7 @@
 
 				<!-- Interface Settings -->
 				<StackPanel Classes="setting-group">
-					<TextBlock Text="Interface Settings" Classes="setting-title" />
+					<TextBlock Text="{Binding Lang.InterfaceSetting, Mode=OneWay}" Classes="setting-title" />
 
 					<Grid>
 						<Grid.ColumnDefinitions>
@@ -221,16 +317,14 @@
 							<RowDefinition Height="Auto" />
 						</Grid.RowDefinitions>
 
-			
-							<TextBlock Text="{Binding Lang.ModifyHotkeySetting, Mode=OneWay}" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,6,8,0" />
-							<ComboBox SelectedItem="{Binding LangStr}" ItemsSource="{Binding LangStrs}" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" Margin="0,6,0,0" />
-								
-							<TextBlock Text="{Binding Lang.ModifyHotkeySettingDesc, Mode=OneWay}" Classes="setting-description"
-									   Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1"  Margin="0,0,8,16"/>
+						<TextBlock Text="{Binding Lang.LanguageSetting, Mode=OneWay}" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="0,0,8,0" />
+						<ComboBox SelectedItem="{Binding LangStr}" ItemsSource="{Binding LangStrs}" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" />
 
-						<!-- 第二行 -->
+						<TextBlock Text="{Binding Lang.LanguageSettingDesc, Mode=OneWay}" Classes="setting-description"
+								   Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Margin="0,0,0,8" />
+
 						<TextBlock Text="{Binding Lang.Theme, Mode=OneWay}" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2" Margin="0,0,8,0" />
-						<ComboBox Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" SelectedItem="{Binding Theme}"  ItemsSource="{Binding Themes}" />
+						<ComboBox Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" SelectedItem="{Binding Theme}" ItemsSource="{Binding Themes}" />
 						<TextBlock Text="{Binding Lang.ThemeDesc, Mode=OneWay}" Classes="setting-description"
 								   Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3" />
 					</Grid>

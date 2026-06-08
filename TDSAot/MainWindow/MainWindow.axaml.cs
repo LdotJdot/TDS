@@ -6,7 +6,6 @@ using Avalonia.Themes.Fluent;
 using System;
 using System.Security.Principal;
 using System.Text;
-using TDS.PeekDesktop;
 using TDS.Utils;
 using TDSAot.State;
 using TDSAot.Utils;
@@ -113,7 +112,6 @@ namespace TDSAot
             {
 
             }
-            PeekDesktopHost.Shutdown();
             _trayIcon?.Dispose();
             Environment.Exit(0);
         }

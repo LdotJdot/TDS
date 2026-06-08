@@ -28,18 +28,7 @@ namespace TDS.Globalization
         public string Reindex { get; set; } = "重建索引";
         public string About { get; set; } = "关于...";
 
-        public string DisableStartup { get; set; } = "禁止开机启动";
-        public string EnableStartup { get; set; } = "添加开机启动";
         public string Exit { get; set; } = "退出";
-
-        public string TrayPeekDesktop { get; set; } = "桌面速览 (Peek)";
-        public string PeekEnabled { get; set; } = "启用";
-        public string PeekDoubleClick { get; set; } = "需要双击";
-        public string PeekTaskbarClick { get; set; } = "任务栏空白处触发";
-        public string PeekGameGuard { get; set; } = "全屏/游戏时暂停";
-        public string PeekModeNative { get; set; } = "模式：系统「显示桌面」";
-        public string PeekModeFlyAway { get; set; } = "模式：飞离窗口 (实验)";
-        public string PeekModeMinimize { get; set; } = "模式：最小化窗口";
 
         //Settings        
         public string DefaultResultCount { get; set; } = "默认显示结果数量:";
@@ -50,6 +39,19 @@ namespace TDS.Globalization
         public string ActivateHotkeySetting { get; set; } = "显示窗口快捷键:";
         public string ModifyHotkeySetting { get; set; } = "修饰键:";
         public string ModifyHotkeySettingDesc { get; set; } = "设定快捷键组合以显示窗口";
+        public string ScreenshotSetting { get; set; } = "截屏功能";
+        public string ScreenshotEnabled { get; set; } = "启用区域截屏";
+        public string ScreenshotEnabledDesc { get; set; } = "开启后可用独立快捷键唤起截屏；确认复制到剪贴板，保存弹出对话框；截屏中再次按快捷键自动保存到下方目录";
+        public string ScreenshotHotkeySetting { get; set; } = "截屏快捷键:";
+        public string ScreenshotModifierSetting { get; set; } = "截屏修饰键:";
+        public string ScreenshotHotkeyDesc { get; set; } = "默认 Alt+Shift+A，与主窗口 Ctrl+~ 互不冲突";
+        public string ScreenshotSavePath { get; set; } = "自动保存路径:";
+        public string ScreenshotSavePathDesc { get; set; } = "截屏编辑中再次按下截屏快捷键时自动保存 PNG；目录不存在时会自动创建（默认为程序运行目录）";
+        public string ScreenshotSaveFailed { get; set; } = "截屏保存失败";
+        public string ScreenshotSaveNoSelection { get; set; } = "请先框选截屏区域后再保存。";
+        public string InterfaceSetting { get; set; } = "界面设定";
+        public string LanguageSetting { get; set; } = "界面语言:";
+        public string LanguageSettingDesc { get; set; } = "选择应用界面显示语言";
         public string BehaviorSettings { get; set; } = "行为设定";
         public string AutoHide { get; set; } = "启动后自动隐藏";
         public string AutoHideDesc { get; set; } = "在程序启动后自动隐藏缩小到系统托盘";

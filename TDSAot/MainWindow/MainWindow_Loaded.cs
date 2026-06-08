@@ -33,9 +33,6 @@ namespace TDSAot
         {
             SetWindowSizeByScreenRatio(0.4, 0.5);
 
-            // Initialize PeekDesktop after UI is shown to avoid startup delay
-            InitializePeekDesktopAfterUiShown();
-
             Reset();
         }
 
@@ -125,7 +122,6 @@ namespace TDSAot
             {
                 _trayOptionItem.IsEnabled = true;
                 _trayReindexItem.IsEnabled = true;
-                _trayStartupItem.IsEnabled = true;
                 inputBox.Watermark = LangManager.Instance.CurrentLang.InputWaterMarkInput;
                 inputBox.IsEnabled = true;
                 fileListBox.IsEnabled = true;
@@ -140,7 +136,6 @@ namespace TDSAot
             {
                 _trayOptionItem.IsEnabled = false;
                 _trayReindexItem.IsEnabled = false;
-                _trayStartupItem.IsEnabled = false;
                 inputBox.Watermark = LangManager.Instance.CurrentLang.InputWaterMarkPending;
                 inputBox.IsEnabled = false;
                 fileListBox.IsEnabled = false;

@@ -45,54 +45,71 @@ Now it is a single .exe file around 20MB!
 - **用户友好**：直观且美观的界面，既实用又吸引人。
 - **Cross-Platform**: Built with Avalonia UI, ensuring compatibility across different platforms.
 - **跨平台**：使用 Avalonia UI 构建，确保跨平台兼容性。
-- **Peek Desktop (integrated)**: Click empty desktop wallpaper (optional double-click / taskbar blank area) to temporarily hide other windows and focus the desktop — see the section below.
-- **桌面速览（已整合）**：点击桌面空白壁纸（可选双击或任务栏空白触发）临时「速览」桌面；详见下文。
+- **Region Screenshot (integrated)**: Built-in area capture with annotation tools — see the section below.
+- **区域截屏（已整合）**：内置选区截屏与标注工具，详见下文。
 
-## Peek Desktop (integrated)
-## 桌面速览（PeekDesktop 整合说明）
+## Region Screenshot (integrated)
+## 区域截屏（整合说明）
 
-The former standalone **PeekDesktop** feature is now **embedded in TDS** as the `TDS.PeekDesktop` namespace. It runs on a dedicated STA thread with a Win32 message loop and a low-level mouse hook, matching the original architecture so shell behavior stays reliable.
+TDS includes a **region screenshot** tool under `TDSAot/ScreenShot/`. It is independent from the main search window: separate hotkey, separate fullscreen UI, and no impact on file search.
 
-原独立项目 **PeekDesktop** 已**内嵌到 TDS** 中，命名空间为 `TDS.PeekDesktop`。在与独立版相同的模型下运行（专用 STA 线程 + Win32 消息泵 + 底层鼠标钩子），以保证与 Shell 交互稳定。
-https://github.com/shanselman/PeekDesktop
+TDS 内置**区域截屏**功能，源码位于 `TDSAot/ScreenShot/`。与主搜索窗口**相互独立**：独立快捷键、独立全屏界面，不影响文件搜索。
 
-### User-facing behavior
-### 功能与入口
+### How to enable
+### 如何启用
 
-- **Tray menu**: Under **Peek Desktop** (English) / **桌面速览 (Peek)** (简体中文), you can toggle the feature and sub-options. Settings are persisted automatically.
-- **托盘菜单**：在 **Peek Desktop** / **桌面速览 (Peek)** 子菜单中可开关功能及子项，设置会自动保存。
-- **Typical options**: enable/disable; require double-click on desktop; peek when clicking blank taskbar area; pause while fullscreen/gaming; peek mode (native Show Desktop, minimize windows, or experimental fly-away).
-- **常用选项**：启用；需要双击桌面；任务栏空白处触发；全屏/游戏时暂停；速览模式（系统「显示桌面」、最小化窗口、实验性飞离窗口等）。
+1. Open **Options** from the tray menu or main window.
+1. 从托盘菜单或主窗口打开**选项**。
+2. Check **Enable region screenshot** / **启用区域截屏**, adjust the hotkey if needed, then click **OK**.
+2. 勾选**启用区域截屏**，可按需修改快捷键，点击**确定**保存。
+3. The screenshot hotkey is registered only while the feature is enabled.
+3. 仅在该功能开启时才会注册截屏全局热键。
 
-### Configuration file
-### 配置文件
+### Default hotkey
+### 默认快捷键
 
-- Path: `%APPDATA%\TDS\peekdesktop.json`
-- **Note**: General TDS startup still uses `conf.json` in the app folder where applicable; Peek-specific options live only in `peekdesktop.json`.
-- **说明**：应用本身的其它配置仍以程序目录下的 `conf.json` 等为准；桌面速览**仅**读写上述 `peekdesktop.json`。
+- **Alt + Shift + A** — independent from the main window hotkey (**Ctrl + ~**).
+- **Alt + Shift + A** — 与主窗口唤出快捷键（**Ctrl + ~**）互不冲突。
 
-### Startup / autostart
-### 开机启动
+You can change the key and modifier in Settings (letters A–Z, F1–F12, and modifier combinations such as Ctrl+Shift / Alt+Shift).
+可在设置中修改按键与修饰键（字母 A–Z、F1–F12，以及 Ctrl+Shift、Alt+Shift 等组合）。
 
-- When you enable **auto-start** inside TDS, the app registers **`HKCU\...\Run`** value **`TDS`** pointing at the current executable with **`--hide`** (see `StartUpUtils` in `Utils/ShellRun.cs`).
-- Legacy **Startup folder shortcuts** (`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\TDS.lnk`) are removed when migrating to the registry Run entry.
-- **若在 TDS 内开启开机启动**：会向当前用户 **`Run`** 注册项 **`TDS`**，命令为 **`"TDS.exe" --hide`**（实现见 `Utils/ShellRun.cs`）。迁移到注册表后会尝试删除旧的**启动文件夹**快捷方式。
+### Capture workflow
+### 截屏流程
 
-### Integration & maintenance notes (for developers)
-### 整合与维护说明（开发者）
+1. Press the screenshot hotkey. TDS hides its main window briefly so it is not captured.
+1. 按下截屏快捷键。TDS 会短暂隐藏主窗口，避免将其拍入画面。
+2. Drag to select a region on the fullscreen overlay. Use the toolbar to annotate (rectangle, ellipse, arrow, text, etc.) or adjust the selection.
+2. 在全屏遮罩上拖拽框选区域，可用工具栏标注（矩形、椭圆、箭头、文字等）或调整选区。
+3. **Confirm** — copies the result to the clipboard (PNG/DIB, pasteable in Paint, Word, etc.).
+3. **确认** — 将结果复制到剪贴板（PNG/DIB，可粘贴到画图、Word 等）。
+4. **Save** — opens a file save dialog to export a PNG file.
+4. **保存** — 弹出文件保存对话框，导出 PNG 文件。
+5. **Cancel** or **Esc** — discards and closes the overlay.
+5. **取消** 或 **Esc** — 放弃并关闭截屏界面。
 
-- **Source layout**: `TDSAot/PeekDesktop/` (`DesktopPeek`, `MouseHook`, `DesktopDetector`, `PeekDesktopHost`, `NativeMethods`, UI Automation helpers, etc.).
-- **Initialization**: Peek starts **after the main window is loaded**, on a **background task**, so the first screen and splash are not blocked (`MainWindow_Loaded` → `InitializePeekDesktopAfterUiShown`).
-- **Shutdown**: `PeekDesktopHost.Shutdown()` is invoked when the application exits.
-- **Removed from this repo**: the old **`ProxyLibs`** native proxy DLL project and startup-folder-only workflow; distribution is a **single** `TDS` executable without copying `ProxyLibs.dll`.
-- **Networking**: integrated Peek does **not** bundle the old standalone updater / WinHTTP auto-update path for Peek.
-- **Classification robustness**: if cross-process desktop ListView hit-testing temporarily fails, clicks on the desktop icon list are treated conservatively as **icon-area** so peek does not fire by mistake (see `DesktopDetector.GetClickTarget`).
-- **源码目录**：`TDSAot/PeekDesktop/`。
-- **启动时机**：主窗体 **Loaded** 之后在**后台任务**中启动，避免卡住首屏（`InitializePeekDesktopAfterUiShown`）。
-- **退出**：应用退出时调用 **`PeekDesktopHost.Shutdown()`**。
-- **已移除**：原 **`ProxyLibs`** 工程及依赖启动文件夹快捷方式的旧流程；发布物为**单一** `TDS` 可执行文件，不再附带 `ProxyLibs.dll`。
-- **联网**：整合后的桌面速览**不包含**原独立程序的联网自动更新路径。
-- **点击分类**：跨进程桌面图标列表命中测试失败时，保守按**图标区域**处理，避免误触发速览（见 **`DesktopDetector.GetClickTarget`**）。
+### Configuration
+### 配置项
+
+Screenshot options are stored in the same `conf.json` as other TDS settings:
+
+截屏相关选项与其他 TDS 设置一起保存在 `conf.json` 中：
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `ScreenshotEnabled` | `false` | Enable region screenshot / 启用区域截屏 |
+| `ScreenshotHotKey` | `65` (A) | Virtual key code / 虚拟键码 |
+| `ScreenshotModifierKey` | `5` (Alt+Shift) | Modifier flags / 修饰键组合 |
+
+### Developer notes
+### 开发者说明
+
+- **Entry**: `TDS.Screenshot.ScreenshotHost` — triggered from global hotkey id `9528`.
+- **入口**：`TDS.Screenshot.ScreenshotHost`，由全局热键 ID `9528` 触发。
+- **UI**: `TDS.ScreenShot.UI` — fullscreen `ScreenshotWindow`, toolbar, annotation canvas.
+- **界面**：`TDS.ScreenShot.UI` — 全屏 `ScreenshotWindow`、工具栏、标注画布。
+- **Capture**: `TDS.ScreenShot.Core.Capture` — Win32 virtual-desktop capture.
+- **捕获**：`TDS.ScreenShot.Core.Capture` — Win32 虚拟桌面截屏。
 
 ## Installation
 ## 安装
@@ -115,8 +132,8 @@ https://github.com/shanselman/PeekDesktop
 - **复制文件**：右键单击文件并选择"复制"将其复制到剪贴板。
 - **View Properties**: Right-click on a file and select "Properties" to view detailed information about the file.
 - **查看属性**：右键单击文件并选择"属性"以查看文件的详细信息。
-- **Hotkey**:  The default activation window key is Ctrl+~ (You can change the key setting in the conf.json file). The program minimizes to the system tray in the lower right corner after startup by default. The ESC key can quickly focus and select the text in the input box. Pressing it again clears the text. Ctrl to open the ContextMenu of selected item.
-- **热键**：默认激活窗口按键为 Ctrl+~（您可以在 conf.json 文件中更改按键设置）。程序启动后默认最小化到右下角系统托盘。ESC 键可以快速聚焦并选中输入框中的文本。再次按下则清除文本。Ctrl 键打开选中项的上下文菜单。
+- **Hotkey**: The default activation window key is **Ctrl+~** (changeable in Settings or `conf.json`). Screenshot uses **Alt+Shift+A** when enabled (see **Region Screenshot** above). The program minimizes to the system tray after startup by default. ESC focuses and selects the input box text; press again to clear. Ctrl opens the context menu of the selected item.
+- **热键**：默认唤出主窗口为 **Ctrl+~**（可在设置或 `conf.json` 中修改）。截屏功能开启后默认为 **Alt+Shift+A**（详见上文**区域截屏**）。程序启动后默认最小化到系统托盘。ESC 可快速聚焦并选中输入框文本，再按一次清除。Ctrl 键打开选中项的上下文菜单。
 
 ## Contributing
 ## 贡献

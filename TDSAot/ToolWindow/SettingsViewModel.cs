@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -122,6 +122,34 @@ namespace TDS
                 alwaysTop = value;
                 this.RaiseAndSetIfChanged(ref alwaysTop, value);
             }
+        }
+
+        bool screenshotEnabled = false;
+        public bool ScreenshotEnabled
+        {
+            get => screenshotEnabled;
+            set => this.RaiseAndSetIfChanged(ref screenshotEnabled, value);
+        }
+
+        string screenshotHotKey = "A";
+        public string ScreenshotHotKey
+        {
+            get => screenshotHotKey;
+            set => this.RaiseAndSetIfChanged(ref screenshotHotKey, value);
+        }
+
+        string screenshotModifierKey = "Alt+Shift";
+        public string ScreenshotModifierKey
+        {
+            get => screenshotModifierKey;
+            set => this.RaiseAndSetIfChanged(ref screenshotModifierKey, value);
+        }
+
+        string screenshotSavePath = "";
+        public string ScreenshotSavePath
+        {
+            get => screenshotSavePath;
+            set => this.RaiseAndSetIfChanged(ref screenshotSavePath, value);
         }
 
         bool autoAdjust = true;

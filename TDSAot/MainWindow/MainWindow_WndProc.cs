@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using System;
+using TDS.Screenshot;
 using TDSAot.Utils;
 
 namespace TDSAot
@@ -16,10 +17,18 @@ namespace TDSAot
         /// <param name="wParam">The parameters of the message.</param>
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            // If not a hotkey message or the global hotkey for showing the window
-            if ((int)wParam == GlobalHotkey.HotKeyId)
+            if (msg == GlobalHotkey.HotKeyMessage)
             {
-                AutoShowOrHide();
+                if ((int)wParam == GlobalHotkey.ShowWindowHotKeyId)
+                {
+                    AutoShowOrHide();
+                    handled = true;
+                }
+                else if ((int)wParam == GlobalHotkey.ScreenshotHotKeyId)
+                {
+                    ScreenshotHost.TriggerCaptureAsync(this);
+                    handled = true;
+                }
             }
             else if (msg == WM_QUERYENDSESSION)
             {

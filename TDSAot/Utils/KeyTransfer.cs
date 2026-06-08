@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Input;
 using System;
 using System.Collections.Generic;
@@ -40,6 +40,7 @@ namespace TDSAot.Utils
                 "z"     => 90,
                 "x"     => 88,
                 "c"     => 67,
+                string s when s.Length == 1 && char.IsLetter(s[0]) => (uint)char.ToUpperInvariant(s[0]),
                 "="     => 187,
                 "-"     => 189,
                 "\\"    => 220,
@@ -48,6 +49,8 @@ namespace TDSAot.Utils
                 "Alt"   => (uint)KeyModifiers.Alt,
                 "Shift" => (uint)KeyModifiers.Shift,
                 "Win"   => (uint)KeyModifiers.Meta,
+                "Ctrl+Shift" => (uint)(KeyModifiers.Control | KeyModifiers.Shift),
+                "Alt+Shift"  => (uint)(KeyModifiers.Alt | KeyModifiers.Shift),
                 _       => 192
             };
         }
@@ -85,6 +88,7 @@ namespace TDSAot.Utils
                 90 => "z",
                 88 => "x",
                 67 => "c",
+                uint n when n is >= 65 and <= 90 => ((char)n).ToString(),
                 187 => "=",
                 189 => "-",
                 220 => "\\",
@@ -93,6 +97,8 @@ namespace TDSAot.Utils
                 uint n when n == (uint)KeyModifiers.Alt => "Alt",
                 uint n when n == (uint)KeyModifiers.Shift => "Shift",
                 uint n when n == (uint)KeyModifiers.Meta => "Win",
+                6u => "Ctrl+Shift",
+                5u => "Alt+Shift",
                 _ => "~" // 默认值与原函数保持一致
             };
         }

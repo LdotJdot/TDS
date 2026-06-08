@@ -23,18 +23,7 @@ namespace TDS.Globalization
         public string ShowWindow { get; set; }
         public string Reindex { get; set; }
         public string About { get; set; }
-        public string DisableStartup { get; set; }
-        public string EnableStartup { get; set; }
         public string Exit { get; set; }
-
-        public string TrayPeekDesktop { get; set; }
-        public string PeekEnabled { get; set; }
-        public string PeekDoubleClick { get; set; }
-        public string PeekTaskbarClick { get; set; }
-        public string PeekGameGuard { get; set; }
-        public string PeekModeNative { get; set; }
-        public string PeekModeFlyAway { get; set; }
-        public string PeekModeMinimize { get; set; }
 
         public string DefaultResultCount { get; set;     }
         public string DefaultResultCountTip { get; set;  }
@@ -45,6 +34,19 @@ namespace TDS.Globalization
         public string ActivateHotkeySetting { get; set;   }
         public string ModifyHotkeySetting { get; set;     }
         public string ModifyHotkeySettingDesc { get; set; }
+        public string ScreenshotSetting { get; set; }
+        public string ScreenshotEnabled { get; set; }
+        public string ScreenshotEnabledDesc { get; set; }
+        public string ScreenshotHotkeySetting { get; set; }
+        public string ScreenshotModifierSetting { get; set; }
+        public string ScreenshotHotkeyDesc { get; set; }
+        public string ScreenshotSavePath { get; set; }
+        public string ScreenshotSavePathDesc { get; set; }
+        public string ScreenshotSaveFailed { get; set; }
+        public string ScreenshotSaveNoSelection { get; set; }
+        public string InterfaceSetting { get; set; }
+        public string LanguageSetting { get; set; }
+        public string LanguageSettingDesc { get; set; }
         public string BehaviorSettings { get; set;        }
         public string AutoHide { get; set;                }
         public string AutoHideDesc { get; set;            }
