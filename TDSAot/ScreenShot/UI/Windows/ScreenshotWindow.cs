@@ -28,7 +28,7 @@ public sealed class ScreenshotWindow : Window
     public EditResult? Result { get; private set; }
     public EditRequest Request { get; }
 
-    private readonly WriteableBitmap _source;
+    private WriteableBitmap _source;
     private readonly PixelRect _physicalBounds;
     private Rect _captureBounds; // logical (DIP) client area, synced on Opened
     private double _dpiScale;
@@ -39,11 +39,14 @@ public sealed class ScreenshotWindow : Window
     private readonly AnnotationCanvas _annoCanvas; // Layer 5: drawing surface
     private readonly SelectionAdorner _adorner;    // Layer 6: selection frame + 8 handles
     private readonly ScreenshotToolbar _toolbar;     // Layer 7: bottom toolbar
+    private readonly Border _stitchWaitLayer;        // full-screen wait during scroll stitch
     private Rect _selection;          // current selection in window coordinates
     private bool _hasSelection;
     private bool _dragCreating;
     private Rect _dragStartSelection;
     private Point _dragStartPoint;
+    private ScrollCaptureController? _scrollController;
+    private readonly Canvas _rootCanvas;
 
     public ScreenshotWindow(WriteableBitmap source, PixelRect physicalBounds, double initialDpiScale, EditRequest request)
     {
@@ -110,10 +113,29 @@ public sealed class ScreenshotWindow : Window
         _toolbar.StrokeWidthChanged += (_, w) => _annoCanvas.CurrentStrokeWidth = w;
         _toolbar.UndoClicked += (_, _) => _annoCanvas.Undo();
         _toolbar.SaveClicked += async (_, _) => await DoSaveAsync();
-        _toolbar.CancelClicked += (_, _) => { Result = new EditResult { Outcome = EditOutcome.Cancelled }; Close(); };
-        _toolbar.ConfirmClicked += async (_, _) => await DoConfirmAsync();
+        _toolbar.CancelClicked += (_, _) =>
+        {
+            if (_scrollController is { IsActive: true })
+            {
+                _scrollController.Cancel();
+                return;
+            }
+            Result = new EditResult { Outcome = EditOutcome.Cancelled };
+            Close();
+        };
+        _toolbar.ConfirmClicked += async (_, _) =>
+        {
+            if (_scrollController is { IsActive: true } or { HasTiles: true })
+            {
+                await FinishScrollCaptureAndConfirmAsync();
+                return;
+            }
+            await DoConfirmAsync();
+        };
+        _toolbar.ScrollCaptureClicked += OnScrollCaptureToggled;
 
-        var root = new Canvas { ClipToBounds = true, Background = Brushes.Transparent };
+        _rootCanvas = new Canvas { ClipToBounds = true, Background = Brushes.Transparent };
+        var root = _rootCanvas;
         root.Children.Add(_screenshotImage);
         Canvas.SetLeft(_screenshotImage, 0); Canvas.SetTop(_screenshotImage, 0);
         root.Children.Add(_dimPath);
@@ -134,6 +156,43 @@ public sealed class ScreenshotWindow : Window
         _toolbar.ZIndex = 30;
         root.Children.Add(_toolbar);
 
+        _stitchWaitLayer = new Border
+        {
+            Background = new SolidColorBrush(Color.FromArgb(170, 0, 0, 0)),
+            IsVisible = false,
+            IsHitTestVisible = true,
+            ZIndex = 60,
+            Child = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Spacing = 6,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = "拼接中…",
+                        FontSize = 20,
+                        FontWeight = FontWeight.SemiBold,
+                        Foreground = Brushes.White,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                    },
+                    new TextBlock
+                    {
+                        Text = "正在合成滚动长图，请稍候",
+                        FontSize = 13,
+                        Foreground = new SolidColorBrush(Color.FromArgb(220, 220, 220, 230)),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                    },
+                },
+            },
+        };
+        root.Children.Add(_stitchWaitLayer);
+        Canvas.SetLeft(_stitchWaitLayer, 0);
+        Canvas.SetTop(_stitchWaitLayer, 0);
+        _stitchWaitLayer.Width = _captureBounds.Width;
+        _stitchWaitLayer.Height = _captureBounds.Height;
+
         Content = root;
 
         _inputCatcher.PointerPressed += OnRootPointerPressed;
@@ -143,7 +202,6 @@ public sealed class ScreenshotWindow : Window
         // receiving move/release even when the pointer leaves its bounds.
         root.PointerMoved += OnRootPointerMoved;
         root.PointerReleased += OnRootPointerReleased;
-
         // Tunnel so Esc closes immediately even when a child (e.g. inline TextBox) has focus.
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel, handledEventsToo: true);
         Opened += OnScreenshotOpened;
@@ -157,9 +215,9 @@ public sealed class ScreenshotWindow : Window
     private static readonly IBrush IdleDimBrush =
         new SolidColorBrush(Color.FromArgb(88, 0, 0, 0));
 
-    /// <summary>Stronger dim outside the selected region.</summary>
+    /// <summary>Dim outside the selected region — matches the initial full-screen dim level.</summary>
     private static readonly IBrush SelectionDimBrush =
-        new SolidColorBrush(Color.FromArgb(210, 0, 0, 0));
+        new SolidColorBrush(Color.FromArgb(168, 0, 0, 0));
 
     private bool ShouldShowSelectionVignette()
         => _hasSelection
@@ -171,6 +229,7 @@ public sealed class ScreenshotWindow : Window
     private void OnRootPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (_dragMovingHandle) return;
+        if (_scrollController is { IsActive: true }) return; // block new selections during scroll capture
         var p = e.GetPosition(Content as Visual);
         // Inside an existing selection: AnnotationCanvas (above) or a resize
         // handle on the adorner (above) owns the event — do nothing here.
@@ -414,6 +473,24 @@ public sealed class ScreenshotWindow : Window
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
+        // Scroll-capture mode hijacks Esc/Enter so the user can finish or
+        // abort the session without clicking through the toolbar.
+        if (_scrollController is { IsActive: true } or { HasTiles: true })
+        {
+            if (e.Key == Key.Enter)
+            {
+                _ = FinishScrollCaptureAndConfirmAsync();
+                e.Handled = true;
+                return;
+            }
+            if (e.Key == Key.Escape && _scrollController.IsActive)
+            {
+                _scrollController.Cancel();
+                e.Handled = true;
+                return;
+            }
+        }
+
         if (e.Key == Key.Escape)
         {
             Result = new EditResult { Outcome = EditOutcome.Cancelled };
@@ -437,6 +514,322 @@ public sealed class ScreenshotWindow : Window
             if (e.Key == Key.Z) { _annoCanvas.Undo(); e.Handled = true; }
             else if (e.Key == Key.C) { _ = DoCopyAsync(); e.Handled = true; }
             else if (e.Key == Key.S) { _ = DoSaveAsync(); e.Handled = true; }
+        }
+    }
+
+    // -----------------------------------------------------------------------------------
+    //  Scroll capture mode
+    // -----------------------------------------------------------------------------------
+    private void OnScrollCaptureToggled(object? sender, EventArgs e)
+    {
+        try
+        {
+            if (_scrollController is { IsActive: true })
+                _ = StopScrollCaptureAsync();
+            else if (_hasSelection)
+                StartScrollCapture();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[scroll] toggle failed: {ex}");
+            EnsureScrollUiRecovered();
+        }
+    }
+
+    private void StartScrollCapture()
+    {
+        if (!_hasSelection) return;
+        var physicalRect = new PixelRect(
+            _physicalBounds.X + (int)(_selection.X * _dpiScale),
+            _physicalBounds.Y + (int)(_selection.Y * _dpiScale),
+            Math.Max(1, (int)(_selection.Width * _dpiScale)),
+            Math.Max(1, (int)(_selection.Height * _dpiScale)));
+
+        var capture = CaptureFactory.Create();
+        var overlayHost = Content as Panel
+                          ?? throw new InvalidOperationException("ScreenshotWindow.Content must be a Panel.");
+        _scrollController = new ScrollCaptureController(
+            capture, overlayHost, physicalRect, _dpiScale, TryGetHwnd());
+        _scrollController.CapturingStopped += OnScrollCapturingStopped;
+        _scrollController.Cancelled += OnScrollCaptureCancelled;
+        _toolbar.SetScrollCaptureActive(true);
+
+        // Win32 region 挖洞 + 隐藏 adorner，让选区内透出桌面 live 内容
+        _screenshotImage.IsVisible = false;
+        _dimPath.Fill = SelectionDimBrush;
+        var outer = new RectangleGeometry(new Rect(0, 0, _captureBounds.Width, _captureBounds.Height));
+        var inner = new RectangleGeometry(_selection);
+        _dimPath.Data = new CombinedGeometry(GeometryCombineMode.Xor, outer, inner);
+        _dimPath.IsVisible = true;
+        _dimPath.IsHitTestVisible = false;   // 遮罩透传鼠标事件
+        _inputCatcher.IsHitTestVisible = false;
+        _annoCanvas.IsHitTestVisible = false;
+        _annoCanvas.IsVisible = false;
+        _annoCanvas.Clip = null;
+        _toolbar.IsHitTestVisible = true;
+        _adorner.IsVisible = false;
+        _adorner.UpdateLayout();
+        _rootCanvas.Background = Brushes.Transparent;
+        UpdateLayout();
+
+        ApplyScrollCaptureHole();
+        _scrollController.Begin();
+    }
+
+    /// <summary>
+    /// 用 Win32 SetWindowRgn 在 overlay 上挖选区洞。坐标必须是 HWND 客户区物理像素。
+    /// <para>
+    /// 曾直接用 Avalonia 逻辑 DIP 设 region——125%/150% 缩放下洞与选区偏移，BitBlt 截到遮罩边缘。
+    /// 现：hole = selection × dpiScale；client 优先 <see cref="Win32WindowRegion.TryGetClientSize"/>。
+    /// </para>
+    /// </summary>
+    private void ApplyScrollCaptureHole()
+    {
+        var hwnd = TryGetHwnd();
+        if (hwnd == IntPtr.Zero) return;
+
+        // Win32 region 坐标系 = 客户区物理像素；_selection 为逻辑 DIP。
+        int clientW = Math.Max(1, (int)Math.Round(_captureBounds.Width * _dpiScale));
+        int clientH = Math.Max(1, (int)Math.Round(_captureBounds.Height * _dpiScale));
+        if (Win32WindowRegion.TryGetClientSize(hwnd, out int cw, out int ch))
+        {
+            clientW = cw;
+            clientH = ch;
+        }
+
+        int holeX = (int)Math.Round(_selection.X * _dpiScale);
+        int holeY = (int)Math.Round(_selection.Y * _dpiScale);
+        int holeW = Math.Max(1, (int)Math.Round(_selection.Width * _dpiScale));
+        int holeH = Math.Max(1, (int)Math.Round(_selection.Height * _dpiScale));
+
+        Win32WindowRegion.ApplySelectionHole(
+            hwnd, clientW, clientH, holeX, holeY, holeW, holeH);
+        System.Diagnostics.Debug.WriteLine(
+            $"[scroll] hole physical: client={clientW}x{clientH} hole=({holeX},{holeY},{holeW}x{holeH}) dpi={_dpiScale:F2}");
+    }
+
+    private void ClearScrollCaptureHole()
+    {
+        var hwnd = TryGetHwnd();
+        if (hwnd == IntPtr.Zero) return;
+        Win32WindowRegion.Clear(hwnd);
+    }
+
+    /// <summary>End scroll mode; keep raw tiles in memory (no stitch).</summary>
+    private async Task StopScrollCaptureAsync()
+    {
+        try
+        {
+            var ctl = _scrollController;
+            if (ctl == null || !ctl.IsActive) return;
+            await ctl.StopCapturingAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[scroll] StopScrollCaptureAsync: {ex}");
+            EnsureScrollUiRecovered();
+        }
+    }
+
+    /// <summary>Stop if needed, stitch stored tiles once, then confirm.</summary>
+    private async Task FinishScrollCaptureAndConfirmAsync()
+    {
+        try
+        {
+            var ctl = _scrollController;
+            if (ctl == null || (!ctl.IsActive && !ctl.HasTiles)) return;
+
+            if (ctl.IsActive)
+                await ctl.StopCapturingAsync();
+            if (ctl.TileCount < 1)
+            {
+                System.Diagnostics.Debug.WriteLine("[scroll] confirm aborted — no tiles captured");
+                return;
+            }
+            WriteableBitmap? stitched = null;
+            try
+            {
+                await ShowStitchWaitAsync();
+                stitched = await ctl.StitchAsync();
+            }
+            finally
+            {
+                HideStitchWait();
+            }
+            if (stitched.PixelSize.Width < 1 || stitched.PixelSize.Height < 1)
+            {
+                System.Diagnostics.Debug.WriteLine("[scroll] confirm aborted — stitched image empty");
+                stitched.Dispose();
+                return;
+            }
+            ApplyStitchedScrollResult(stitched, preview: false);
+            _scrollController = null;
+            await DoConfirmAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[scroll] FinishScrollCaptureAndConfirmAsync: {ex}");
+            HideStitchWait();
+            EnsureScrollUiRecovered();
+        }
+    }
+
+    /// <summary>Stop if needed, stitch once, prepare bitmap for save/copy.</summary>
+    private async Task<WriteableBitmap?> StitchScrollTilesForExportAsync()
+    {
+        try
+        {
+            var ctl = _scrollController;
+            if (ctl == null || (!ctl.IsActive && !ctl.HasTiles))
+                return null;
+            if (ctl.IsActive)
+                await ctl.StopCapturingAsync();
+            if (ctl.TileCount < 1)
+                return null;
+            WriteableBitmap? stitched = null;
+            try
+            {
+                await ShowStitchWaitAsync();
+                stitched = await ctl.StitchAsync();
+            }
+            finally
+            {
+                HideStitchWait();
+            }
+            if (stitched.PixelSize.Width < 1 || stitched.PixelSize.Height < 1)
+            {
+                stitched.Dispose();
+                return null;
+            }
+            ApplyStitchedScrollResult(stitched, preview: false);
+            _scrollController = null;
+            return stitched;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[scroll] StitchScrollTilesForExportAsync: {ex}");
+            HideStitchWait();
+            EnsureScrollUiRecovered();
+            return null;
+        }
+    }
+
+    private async Task ShowStitchWaitAsync()
+    {
+        _stitchWaitLayer.Width = _captureBounds.Width;
+        _stitchWaitLayer.Height = _captureBounds.Height;
+        _stitchWaitLayer.IsVisible = true;
+        await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Render);
+        await Task.Delay(32);
+    }
+
+    private void HideStitchWait() => _stitchWaitLayer.IsVisible = false;
+
+    private void OnScrollCapturingStopped(int tileCount)
+    {
+        try
+        {
+            _toolbar.SetScrollCaptureActive(false);
+            RestorePassthroughUi();
+            System.Diagnostics.Debug.WriteLine($"[scroll] UI: stopped with {tileCount} raw tile(s); stitch on confirm/save");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[scroll] OnScrollCapturingStopped: {ex}");
+            EnsureScrollUiRecovered();
+        }
+    }
+
+    private void ApplyStitchedScrollResult(WriteableBitmap stitched, bool preview)
+    {
+        var oldSource = _source;
+        _source = stitched;
+
+        double newW = _source.PixelSize.Width / _dpiScale;
+        double newH = _source.PixelSize.Height / _dpiScale;
+        _selection = new Rect(0, 0, newW, newH);
+        _hasSelection = true;
+
+        _screenshotImage.Source = _source;
+        _screenshotImage.SourcePixelRect = new Rect(0, 0, _source.PixelSize.Width, _source.PixelSize.Height);
+        _annoCanvas.SourceBitmap = _source;
+        _annoCanvas.SourceDpiScale = _dpiScale;
+        _annoCanvas.SourceOffset = new Point(0, 0);
+
+        if (preview)
+        {
+            RestorePassthroughUi();
+            _captureBounds = new Rect(0, 0, newW, newH);
+            _screenshotImage.Width = _captureBounds.Width;
+            _screenshotImage.Height = _captureBounds.Height;
+            _inputCatcher.Width = _captureBounds.Width;
+            _inputCatcher.Height = _captureBounds.Height;
+            _annoCanvas.Width = _captureBounds.Width;
+            _annoCanvas.Height = _captureBounds.Height;
+            UpdateSelectionVisuals();
+        }
+
+        if (!ReferenceEquals(oldSource, stitched))
+            oldSource.Dispose();
+    }
+
+    private void OnScrollCaptureCancelled()
+    {
+        try
+        {
+            RestorePassthroughUi();
+            _toolbar.SetScrollCaptureActive(false);
+            _scrollController = null;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[scroll] OnScrollCaptureCancelled: {ex}");
+            EnsureScrollUiRecovered();
+            _scrollController = null;
+        }
+    }
+
+    private void RestorePassthroughUi()
+    {
+        ClearScrollCaptureHole();
+        _dimPath.IsHitTestVisible = true;
+        if (_source != null)
+        {
+            _screenshotImage.Source = _source;
+            _screenshotImage.SourcePixelRect = new Rect(0, 0, _source.PixelSize.Width, _source.PixelSize.Height);
+            _annoCanvas.SourceBitmap = _source;
+            _screenshotImage.IsVisible = true;
+        }
+        _inputCatcher.IsHitTestVisible = true;
+        _annoCanvas.IsHitTestVisible = true;
+        _toolbar.IsHitTestVisible = true;
+        UpdateSelectionVisuals();
+    }
+
+    private void EnsureScrollUiRecovered()
+    {
+        try
+        {
+            HideStitchWait();
+            _toolbar.SetScrollCaptureActive(false);
+            ClearScrollCaptureHole();
+            RestorePassthroughUi();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[scroll] EnsureScrollUiRecovered: {ex}");
+        }
+    }
+
+    private IntPtr TryGetHwnd()
+    {
+        try
+        {
+            return TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+        }
+        catch
+        {
+            return IntPtr.Zero;
         }
     }
 
@@ -525,24 +918,12 @@ public sealed class ScreenshotWindow : Window
         }
     }
 
-    /// <summary>
-    /// Minimal control that draws an arbitrary sub-rect of an <see cref="IBitmap"/>
-    /// into its own bounds, 1:1, with no scaling. Used by
-    /// <see cref="BuildResultBitmap"/> to render the cropped selection without
-    /// depending on the Image control's Stretch/RenderTransform quirks.
-    /// </summary>
-    // CroppedSourceView now lives in ScreenShot.UI.Services.BitmapCropper and
-    // is reused by the public Crop() helper.
-
     private async Task DoConfirmAsync()
     {
         if (!_hasSelection) return;
         try
         {
             var bmp = BuildResultBitmap(_selection);
-            // BuildResultBitmap returns a Bitmap (RenderTargetBitmap), not a
-            // WriteableBitmap, so don't cast here — the old cast threw
-            // InvalidCastException and left the window in a half-closed state.
             var png = await Task.Run(() => PngEncoder.Encode(bmp));
             Result = new EditResult
             {
@@ -552,13 +933,10 @@ public sealed class ScreenshotWindow : Window
                 Result = bmp,
                 PngBytes = png,
             };
-            // Also copy to clipboard by default (matches Win+Shift+S behavior).
             await ClipboardService.CopyBitmapAsync(this, bmp);
         }
         catch (Exception ex)
         {
-            // Never leave the user staring at a frozen overlay: always close
-            // and surface a Cancelled result so the caller returns cleanly.
             System.Diagnostics.Debug.WriteLine($"DoConfirmAsync failed: {ex}");
             Result ??= new EditResult { Outcome = EditOutcome.Cancelled };
         }
@@ -567,7 +945,10 @@ public sealed class ScreenshotWindow : Window
 
     private async Task DoCopyAsync()
     {
-        if (!_hasSelection) return;
+        if (!_hasSelection && _scrollController is not ({ IsActive: true } or { HasTiles: true }))
+            return;
+        if (_scrollController is { IsActive: true } or { HasTiles: true })
+            await StitchScrollTilesForExportAsync();
         try
         {
             var bmp = BuildResultBitmap(_selection);
@@ -590,6 +971,7 @@ public sealed class ScreenshotWindow : Window
         Close();
     }
 
+    /// <summary>Save to a directory without a file dialog (no selection = full capture).</summary>
     public async Task<(bool Ok, string? SavedPath, string? Error)> TryQuickSaveAsync(
         string? saveDirectory, string fallbackDirectory)
     {
@@ -636,7 +1018,8 @@ public sealed class ScreenshotWindow : Window
         {
             Center = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
             GradientOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
-            Radius = 0.7,
+            RadiusX = new RelativeScalar(0.7, RelativeUnit.Relative),
+            RadiusY = new RelativeScalar(0.7, RelativeUnit.Relative),
             GradientStops =
             {
                 new GradientStop(Color.FromArgb(48, 255, 255, 255), 0),
@@ -658,21 +1041,21 @@ public sealed class ScreenshotWindow : Window
         Canvas.SetTop(flash, 0);
         root.Children.Add(flash);
 
-        // Burst in: edges light up first, ring expands (~45ms)
         for (var i = 0; i < 3; i++)
         {
             flash.Opacity = (i + 1) / 3.0;
-            vignette.Radius = 0.62 + i * 0.14;
+            vignette.RadiusX = new RelativeScalar(0.62 + i * 0.14, RelativeUnit.Relative);
+            vignette.RadiusY = new RelativeScalar(0.62 + i * 0.14, RelativeUnit.Relative);
             await Task.Delay(15);
         }
 
         await Task.Delay(18);
 
-        // Quick fade out (~40ms)
         for (var i = 0; i < 3; i++)
         {
             flash.Opacity = 1.0 - (i + 1) / 3.0;
-            vignette.Radius = 0.9 + i * 0.1;
+            vignette.RadiusX = new RelativeScalar(0.9 + i * 0.1, RelativeUnit.Relative);
+            vignette.RadiusY = new RelativeScalar(0.9 + i * 0.1, RelativeUnit.Relative);
             await Task.Delay(13);
         }
 
@@ -681,14 +1064,17 @@ public sealed class ScreenshotWindow : Window
 
     private async Task DoSaveAsync()
     {
-        if (!_hasSelection) return;
+        if (!_hasSelection && _scrollController is not ({ IsActive: true } or { HasTiles: true }))
+            return;
+        if (_scrollController is { IsActive: true } or { HasTiles: true })
+            await StitchScrollTilesForExportAsync();
         try
         {
             var bmp = BuildResultBitmap(_selection);
             var png = await Task.Run(() => PngEncoder.Encode(bmp));
             var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                Title = "Save Screenshot",
+                Title = "保存截屏",
                 DefaultExtension = "png",
                 SuggestedFileName = ScreenshotFileSaver.BuildFileName(),
                 FileTypeChoices = new[]
@@ -728,11 +1114,20 @@ public sealed class ScreenshotWindow : Window
         if (_disposed) return;
         _disposed = true;
 
-        // Drop all references to the full-screen capture, then dispose it
-        // immediately instead of waiting for GC (can be tens of MB).
         _screenshotImage.Source = null;
         _annoCanvas.SourceBitmap = null;
-        _source.Dispose();
+        try
+        {
+            if (_scrollController is { IsActive: true })
+                _scrollController.Cancel();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[scroll] CleanupResources cancel: {ex}");
+        }
+        _scrollController = null;
+        try { _source.Dispose(); }
+        catch (ObjectDisposedException) { }
     }
 
     // -----------------------------------------------------------------------------------

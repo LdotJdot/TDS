@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
@@ -490,7 +490,7 @@ public sealed class AnnotationCanvas : Control
             {
                 Kind = AnnotationKind.Mosaic,
                 Stroke = CurrentStroke,
-                StrokeWidth = CurrentStrokeWidth,
+                StrokeWidth = 0,
                 Rect = rect,
                 BlockSize = MosaicBlockSizeFromStroke(CurrentStrokeWidth),
             },

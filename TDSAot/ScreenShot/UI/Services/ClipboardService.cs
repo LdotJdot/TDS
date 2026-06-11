@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Media.Imaging;
@@ -20,15 +20,11 @@ public static class ClipboardService
         return Task.CompletedTask;
     }
 
-    // ---------------------------------------------------------------------------------------
-    // Win32: place a DIB on the clipboard so "Paste" in Paint / Word / Discord works.
-    // ---------------------------------------------------------------------------------------
     private static void CopyDibToClipboardWindows(Bitmap bitmap)
     {
         bool localWb = false;
         if (bitmap is not WriteableBitmap wb)
         {
-            // Render to a fresh WriteableBitmap by encoding/decoding PNG bytes.
             using var ms = new MemoryStream();
             bitmap.Save(ms);
             ms.Position = 0;

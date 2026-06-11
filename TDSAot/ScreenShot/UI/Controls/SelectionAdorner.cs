@@ -31,7 +31,7 @@ public sealed class HandleDragEventArgs : EventArgs
 /// </summary>
 public sealed class SelectionAdorner
 {
-    private const double HandleSize = 10;
+    private const double HandleSize = 7;
     private const double HandleHalf = HandleSize / 2;
 
     private readonly Canvas _host;
@@ -81,9 +81,9 @@ public sealed class SelectionAdorner
             {
                 Width = HandleSize,
                 Height = HandleSize,
-                Fill = Brushes.White,
+                Fill = new SolidColorBrush(Color.FromRgb(80, 220, 100)),
                 Stroke = new SolidColorBrush(Color.FromRgb(80, 220, 100)),
-                StrokeThickness = 1.5,
+                StrokeThickness = 1,
                 IsHitTestVisible = true,
                 Cursor = k switch
                 {

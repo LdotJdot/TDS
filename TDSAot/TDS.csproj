@@ -46,6 +46,7 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.9" />
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

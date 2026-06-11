@@ -34,11 +34,15 @@ public static class ScreenshotService
 
     /// <summary>Auto-save the open editor to <paramref name="saveDirectory"/>.</summary>
     public static Task<(bool Ok, string? SavedPath, string? Error)> TryAutoSaveActiveAsync(
-        string? saveDirectory, string fallbackDirectory)
+        string? saveDirectory,
+        string fallbackDirectory
+    )
     {
         var win = _activeWindow;
         if (win == null)
-            return Task.FromResult<(bool, string?, string?)>((false, null, "Screenshot editor is not open."));
+            return Task.FromResult<(bool, string?, string?)>(
+                (false, null, "Screenshot editor is not open.")
+            );
         return win.TryQuickSaveAsync(saveDirectory, fallbackDirectory);
     }
 
@@ -65,8 +69,9 @@ public static class ScreenshotService
     {
         var capture = CaptureFactory.Create();
         var screens = capture.GetScreens();
-        var virtualDesktop = screens.FirstOrDefault(s => s.DeviceName == "VirtualDesktop")
-                             ?? screens.First(s => s.IsPrimary);
+        var virtualDesktop =
+            screens.FirstOrDefault(s => s.DeviceName == "VirtualDesktop")
+            ?? screens.First(s => s.IsPrimary);
         return capture.CaptureScreen(virtualDesktop);
     }
 
@@ -88,12 +93,18 @@ public static class ScreenshotService
             (int)screenBounds.X,
             (int)screenBounds.Y,
             (int)screenBounds.Width,
-            (int)screenBounds.Height);
+            (int)screenBounds.Height
+        );
 
         var tcs = new TaskCompletionSource<EditResult?>();
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            var win = new ScreenshotWindow(fullBitmap, physicalBounds, targetScreen.DpiScale, request);
+            var win = new ScreenshotWindow(
+                fullBitmap,
+                physicalBounds,
+                targetScreen.DpiScale,
+                request
+            );
             win.Closed += (_, _) =>
             {
                 UnregisterActiveWindow(win);
@@ -127,22 +138,27 @@ public static class ScreenshotService
     public static async Task<EditResult> EditAndSaveAsync(EditRequest? request = null)
     {
         var result = await EditAsync(request);
-        if (result?.PngBytes == null) return new EditResult { Outcome = EditOutcome.Cancelled };
+        if (result?.PngBytes == null)
+            return new EditResult { Outcome = EditOutcome.Cancelled };
         var owner = TryGetActiveWindow();
-        if (owner == null) return result;
+        if (owner == null)
+            return result;
 
         var sp = owner.StorageProvider;
-        var file = await sp.SaveFilePickerAsync(new FilePickerSaveOptions
-        {
-            Title = "保存截屏",
-            DefaultExtension = "png",
-            SuggestedFileName = $"snapshot_{DateTime.Now:yyyyMMdd_HHmmss}.png",
-            FileTypeChoices = new[]
+        var file = await sp.SaveFilePickerAsync(
+            new FilePickerSaveOptions
             {
-                new FilePickerFileType("PNG 图片") { Patterns = new[] { "*.png" } }
+                Title = "保存截屏",
+                DefaultExtension = "png",
+                SuggestedFileName = $"snapshot_{DateTime.Now:yyyyMMdd_HHmmss}.png",
+                FileTypeChoices = new[]
+                {
+                    new FilePickerFileType("PNG 图片") { Patterns = new[] { "*.png" } }
+                }
             }
-        });
-        if (file is null) return result;
+        );
+        if (file is null)
+            return result;
         var path = file.Path.AbsolutePath;
         await using var fs = File.Create(path);
         await fs.WriteAsync(result.PngBytes);
@@ -151,11 +167,13 @@ public static class ScreenshotService
 
     private static Window? TryGetActiveWindow()
     {
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if (
+            Application.Current?.ApplicationLifetime
+            is IClassicDesktopStyleApplicationLifetime desktop
+        )
         {
             return desktop.Windows.FirstOrDefault(w => w.IsActive) ?? desktop.MainWindow;
         }
         return null;
     }
-
 }

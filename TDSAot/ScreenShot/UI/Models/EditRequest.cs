@@ -18,6 +18,13 @@ public sealed class EditRequest
 
     /// <summary>Optional hotkey for fast capture (e.g. Ctrl+Shift+S). Not implemented in v1.</summary>
     public string? HotKey { get; init; }
+
+    /// <summary>
+    /// Whether the toolbar exposes a "scroll capture" button. When true, the user
+    /// can enter scroll-capture mode after drawing a selection: the mouse wheel
+    /// will scroll the underlying window and auto-stitch the captured tiles.
+    /// </summary>
+    public bool EnableScrollCapture { get; init; } = true;
 }
 
 public static class ToolIds

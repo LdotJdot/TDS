@@ -19,6 +19,7 @@ public sealed class ScreenshotToolbar : Border
     public event EventHandler? SaveClicked;
     public event EventHandler? CancelClicked;
     public event EventHandler? ConfirmClicked;
+    public event EventHandler? ScrollCaptureClicked;
     public event EventHandler<Color>? ColorChanged;
     public event EventHandler<double>? StrokeWidthChanged;
 
@@ -29,6 +30,11 @@ public sealed class ScreenshotToolbar : Border
 
     private readonly Dictionary<string, ToolbarButton> _toolButtons = new();
     private readonly ToolbarButton _undoButton;
+    private readonly ToolbarButton? _scrollButton;
+    private readonly ToolbarButton? _saveButton;
+    private readonly ToolbarButton _cancelButton;
+    private readonly ToolbarButton _confirmButton;
+    private readonly List<Control> _hiddenDuringScroll = new();
     private readonly Dictionary<Color, Border> _colorChips = new();
     private readonly Dictionary<double, Border> _widthChips = new();
     private readonly List<double> _widthPresets = new() { 2, 3, 5, 8 };
@@ -47,15 +53,22 @@ public sealed class ScreenshotToolbar : Border
         Padding = new Thickness(8, 6);
         BorderBrush = new SolidColorBrush(Color.FromArgb(40, 200, 200, 210));
         BorderThickness = new Thickness(0.5);
-        BoxShadow = new BoxShadows(new BoxShadow
-        {
-            OffsetX = 0,
-            OffsetY = 4,
-            Blur = 16,
-            Color = Color.FromArgb(80, 0, 0, 0),
-        });
+        BoxShadow = new BoxShadows(
+            new BoxShadow
+            {
+                OffsetX = 0,
+                OffsetY = 4,
+                Blur = 16,
+                Color = Color.FromArgb(80, 0, 0, 0),
+            }
+        );
 
-        var root = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
+        var root = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 4,
+            VerticalAlignment = VerticalAlignment.Center
+        };
         Child = root;
 
         var toolGroup = CreateGroup(out var tools);
@@ -67,39 +80,96 @@ public sealed class ScreenshotToolbar : Border
         AddTool(tools, ToolIds.Text, ToolIcons.Text, "文字");
         AddTool(tools, ToolIds.Mosaic, ToolIcons.Mosaic, "马赛克");
         root.Children.Add(toolGroup);
+        _hiddenDuringScroll.Add(toolGroup);
 
-        root.Children.Add(Separator());
+        var sepTools = Separator();
+        root.Children.Add(sepTools);
+        _hiddenDuringScroll.Add(sepTools);
 
         var colorGroup = CreateGroup(out var colors);
         AddColorChips(colors);
         root.Children.Add(colorGroup);
+        _hiddenDuringScroll.Add(colorGroup);
 
-        root.Children.Add(Separator());
+        var sepColors = Separator();
+        root.Children.Add(sepColors);
+        _hiddenDuringScroll.Add(sepColors);
 
         var widthGroup = CreateGroup(out var widths);
         AddWidthChips(widths);
         root.Children.Add(widthGroup);
+        _hiddenDuringScroll.Add(widthGroup);
 
-        root.Children.Add(Separator());
+        var sepWidths = Separator();
+        root.Children.Add(sepWidths);
+        _hiddenDuringScroll.Add(sepWidths);
 
         var actionGroup = CreateGroup(out var actions);
         _undoButton = AddIcon(actions, ToolIcons.Undo, "撤销 (Ctrl+Z)");
         _undoButton.IsEnabled = false;
         _undoButton.Click += (_, _) => UndoClicked?.Invoke(this, EventArgs.Empty);
+        _hiddenDuringScroll.Add(_undoButton);
 
         if (ShowSaveButton)
-            AddIcon(actions, ToolIcons.Save, "保存 (Ctrl+S)").Click += (_, _) => SaveClicked?.Invoke(this, EventArgs.Empty);
+        {
+            _saveButton = AddIcon(actions, ToolIcons.Save, "保存 (Ctrl+S)");
+            _saveButton.Click += (_, _) => SaveClicked?.Invoke(this, EventArgs.Empty);
+        }
 
-        AddIcon(actions, ToolIcons.Cancel, "取消 (Esc)").Click += (_, _) => CancelClicked?.Invoke(this, EventArgs.Empty);
+        _cancelButton = AddIcon(actions, ToolIcons.Cancel, "取消 (Esc)");
+        _cancelButton.Click += (_, _) => CancelClicked?.Invoke(this, EventArgs.Empty);
 
-        var done = AddIcon(actions, ToolIcons.Done, "完成 (Enter)");
-        done.IsAccent = true;
-        done.Click += (_, _) => ConfirmClicked?.Invoke(this, EventArgs.Empty);
+        _confirmButton = AddIcon(actions, ToolIcons.Done, "完成 (Enter)");
+        _confirmButton.IsAccent = true;
+        _confirmButton.Click += (_, _) => ConfirmClicked?.Invoke(this, EventArgs.Empty);
         root.Children.Add(actionGroup);
+
+        // Optional scroll-capture toggle. When active, the button reads
+        // "Stop scroll capture" and disables annotation tools.
+        if (request.EnableScrollCapture)
+        {
+            var sepScroll = Separator();
+            root.Children.Add(sepScroll);
+            _hiddenDuringScroll.Add(sepScroll);
+
+            var scrollGroup = CreateGroup(out var scrollActions);
+            _scrollButton = AddIcon(scrollActions, ToolIcons.ScrollCapture, "滚动截屏 (选区内滚轮逐帧捕获)");
+            _scrollButton.Click += (_, _) => ScrollCaptureClicked?.Invoke(this, EventArgs.Empty);
+            root.Children.Add(scrollGroup);
+            _hiddenDuringScroll.Add(scrollGroup);
+        }
 
         UpdateActiveTool();
         UpdateColorChips();
         UpdateWidthChips();
+    }
+
+    /// <summary>Reflects the active state of the scroll-capture mode in the toolbar UI.</summary>
+    public void SetScrollCaptureActive(bool active)
+    {
+        foreach (var c in _hiddenDuringScroll)
+            c.IsVisible = !active;
+
+        if (_scrollButton != null)
+        {
+            _scrollButton.IsActive = active;
+            ToolTip.SetTip(_scrollButton, active ? "停止滚动截屏" : "滚动截屏（选区中滚动滚轮逐帧捕获）");
+        }
+
+        if (active)
+        {
+            ToolTip.SetTip(_cancelButton, "取消滚动 (Esc)");
+            ToolTip.SetTip(_confirmButton, "完成拼接并退出");
+            if (_saveButton != null)
+                ToolTip.SetTip(_saveButton, "保存长图并退出");
+        }
+        else
+        {
+            ToolTip.SetTip(_cancelButton, "取消 (Esc)");
+            ToolTip.SetTip(_confirmButton, "完成 (Enter)");
+            if (_saveButton != null)
+                ToolTip.SetTip(_saveButton, "保存 (Ctrl+S)");
+        }
     }
 
     public void NotifyUndoCount(int count) => _undoButton.IsEnabled = count > 0;
@@ -118,14 +188,15 @@ public sealed class ScreenshotToolbar : Border
         };
     }
 
-    private static Border Separator() => new()
-    {
-        Width = 1,
-        Height = 22,
-        Margin = new Thickness(1, 0),
-        VerticalAlignment = VerticalAlignment.Center,
-        Background = new SolidColorBrush(Color.FromArgb(40, 200, 200, 210)),
-    };
+    private static Border Separator() =>
+        new()
+        {
+            Width = 1,
+            Height = 22,
+            Margin = new Thickness(1, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            Background = new SolidColorBrush(Color.FromArgb(40, 200, 200, 210)),
+        };
 
     private void AddTool(Panel panel, string id, string geom, string tip)
     {
@@ -138,7 +209,8 @@ public sealed class ScreenshotToolbar : Border
 
     public void SetActiveTool(string id)
     {
-        if (ActiveTool == id) return;
+        if (ActiveTool == id)
+            return;
         ActiveTool = id;
         UpdateActiveTool();
         ToolChanged?.Invoke(this, id);
@@ -178,7 +250,8 @@ public sealed class ScreenshotToolbar : Border
                 Cursor = new Cursor(StandardCursorType.Hand),
                 Tag = c,
             };
-            chip.PointerEntered += (_, _) => chip.BorderBrush = new SolidColorBrush(Color.FromArgb(180, 255, 255, 255));
+            chip.PointerEntered += (_, _) =>
+                chip.BorderBrush = new SolidColorBrush(Color.FromArgb(180, 255, 255, 255));
             chip.PointerExited += (_, _) => UpdateColorChipBorder(chip, c);
             chip.PointerPressed += (_, e) =>
             {
@@ -256,9 +329,9 @@ public sealed class ScreenshotToolbar : Border
 
     private void UpdateColorChipBorder(Border chip, Color c)
     {
-        chip.BorderBrush = new SolidColorBrush(c == CurrentStroke
-            ? Accent
-            : Color.FromArgb(80, 255, 255, 255));
+        chip.BorderBrush = new SolidColorBrush(
+            c == CurrentStroke ? Accent : Color.FromArgb(80, 255, 255, 255)
+        );
         chip.BorderThickness = new Thickness(c == CurrentStroke ? 2.5 : 1.5);
     }
 
@@ -274,8 +347,8 @@ public sealed class ScreenshotToolbar : Border
         chip.Background = active
             ? new SolidColorBrush(Color.FromArgb(52, 72, 210, 110))
             : Brushes.Transparent;
-        chip.BorderBrush = new SolidColorBrush(active
-            ? Color.FromArgb(160, 72, 210, 110)
-            : Color.FromArgb(48, 255, 255, 255));
+        chip.BorderBrush = new SolidColorBrush(
+            active ? Color.FromArgb(160, 72, 210, 110) : Color.FromArgb(48, 255, 255, 255)
+        );
     }
 }

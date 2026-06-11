@@ -12,7 +12,7 @@ internal static class Win32
 {
     private const string User32 = "user32.dll";
     private const string Gdi32 = "gdi32.dll";
-    private const string Kernel32 = "kernel32.dll";
+    private const string DwmApi = "dwmapi.dll";
     private const string Shcore = "Shcore.dll";
 
     public const int MDT_EFFECTIVE_DPI = 0;
@@ -119,13 +119,17 @@ internal static class Win32
         IntPtr hdc, IntPtr hbm, uint start, uint lines,
         IntPtr lpvBits, ref BITMAPINFO lpbmi, uint usage);
 
-    [DllImport(Kernel32)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool QueryPerformanceFrequency(out long lpFrequency);
-
     [DllImport(User32, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool GetCursorPos(out POINT lpPoint);
+
+    [DllImport(User32, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetCursorPos(int x, int y);
+
+    [DllImport(User32, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
 
     [DllImport(Shcore, SetLastError = true)]
     public static extern int GetDpiForMonitor(IntPtr hMonitor, int dpiType, out uint dpiX, out uint dpiY);
@@ -140,4 +144,39 @@ internal static class Win32
         int cx,
         int cy,
         uint uFlags);
+
+    [DllImport(User32)]
+    public static extern IntPtr WindowFromPoint(POINT point);
+
+    [DllImport(User32)]
+    public static extern IntPtr ChildWindowFromPoint(IntPtr hWndParent, POINT point);
+
+    public const int RGN_DIFF = 4;
+
+    [DllImport(Gdi32)]
+    public static extern IntPtr CreateRectRgn(int left, int top, int right, int bottom);
+
+    [DllImport(Gdi32)]
+    public static extern int CombineRgn(IntPtr hrgnDst, IntPtr hrgnSrc1, IntPtr hrgnSrc2, int iMode);
+
+    [DllImport(User32)]
+    public static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, [MarshalAs(UnmanagedType.Bool)] bool bRedraw);
+
+    [DllImport(User32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+    public const uint WM_MOUSEWHEEL = 0x020A;
+    public const int WHEEL_DELTA = 120;
+
+    [DllImport(User32, SetLastError = true)]
+    public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+    public const uint GA_ROOT = 2;
+
+    [DllImport(User32)]
+    public static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
+
+    [DllImport(DwmApi)]
+    public static extern int DwmFlush();
 }

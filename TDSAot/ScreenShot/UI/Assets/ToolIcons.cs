@@ -20,4 +20,9 @@ public static class ToolIcons
     public const string Done = "M5,12 L10,17 L19,7";
     public const string Close = "M6,6 L18,18 M18,6 L6,18";
     public const string Pin = "M12,2 L15,9 L22,10 L17,15 L18,22 L12,19 L6,22 L7,15 L2,10 L9,9 Z";
+    // Scroll capture: stack of three pages with a downward arrow indicating
+    // continued scrolling / appending.
+    public const string ScrollCapture =
+        "M7,4 L17,4 L17,17 L7,17 Z M7,7 L17,7 M7,10 L17,10 M7,13 L15,13 " +
+        "M5,19 L19,19 M12,17 L12,22 M8,19 L12,22 L16,19";
 }
