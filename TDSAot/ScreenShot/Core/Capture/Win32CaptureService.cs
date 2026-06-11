@@ -27,7 +27,11 @@ public sealed class Win32CaptureService : ICaptureService
     /// 向屏幕坐标处的滚动目标投递 <c>WM_MOUSEWHEEL</c>，不依赖当前光标位置。
     /// </summary>
     public static bool TrySendWheelAt(
-        int physicalX, int physicalY, int delta, IntPtr skipOverlayHwnd = default)
+        int physicalX,
+        int physicalY,
+        int delta,
+        IntPtr skipOverlayHwnd = default
+    )
     {
         if (delta == 0)
             return false;
@@ -41,7 +45,8 @@ public sealed class Win32CaptureService : ICaptureService
         IntPtr lParam = (IntPtr)(((physicalY & 0xFFFF) << 16) | (physicalX & 0xFFFF));
         Win32.SendMessage(target, Win32.WM_MOUSEWHEEL, wParam, lParam);
         Debug.WriteLine(
-            $"[scroll] TrySendWheelAt: target=0x{target.ToInt64():X} pt=({physicalX},{physicalY}) delta={delta}");
+            $"[scroll] TrySendWheelAt: target=0x{target.ToInt64():X} pt=({physicalX},{physicalY}) delta={delta}"
+        );
         return true;
     }
 
@@ -85,13 +90,16 @@ public sealed class Win32CaptureService : ICaptureService
         int right = list.Max(s => (int)s.Bounds.Right);
         int bottom = list.Max(s => (int)s.Bounds.Bottom);
         var primaryScale = list.FirstOrDefault(s => s.IsPrimary)?.DpiScale ?? list[0].DpiScale;
-        list.Add(new ScreenInfo(
-            Handle: IntPtr.Zero,
-            DeviceName: "VirtualDesktop",
-            Bounds: new Rect(left, top, right - left, bottom - top),
-            WorkingArea: new Rect(left, top, right - left, bottom - top),
-            DpiScale: primaryScale,
-            IsPrimary: true));
+        list.Add(
+            new ScreenInfo(
+                Handle: IntPtr.Zero,
+                DeviceName: "VirtualDesktop",
+                Bounds: new Rect(left, top, right - left, bottom - top),
+                WorkingArea: new Rect(left, top, right - left, bottom - top),
+                DpiScale: primaryScale,
+                IsPrimary: true
+            )
+        );
         return list;
     }
 
@@ -103,15 +111,28 @@ public sealed class Win32CaptureService : ICaptureService
             if (!Win32.GetMonitorInfo(hMonitor, ref info))
                 return true;
 
-            var bounds = new Rect(info.rcMonitor.Left, info.rcMonitor.Top, info.rcMonitor.Width, info.rcMonitor.Height);
-            var work = new Rect(info.rcWork.Left, info.rcWork.Top, info.rcWork.Width, info.rcWork.Height);
-            list.Add(new ScreenInfo(
-                Handle: hMonitor,
-                DeviceName: info.szDevice,
-                Bounds: bounds,
-                WorkingArea: work,
-                DpiScale: GetMonitorDpiScale(hMonitor),
-                IsPrimary: (info.dwFlags & 1) != 0));
+            var bounds = new Rect(
+                info.rcMonitor.Left,
+                info.rcMonitor.Top,
+                info.rcMonitor.Width,
+                info.rcMonitor.Height
+            );
+            var work = new Rect(
+                info.rcWork.Left,
+                info.rcWork.Top,
+                info.rcWork.Width,
+                info.rcWork.Height
+            );
+            list.Add(
+                new ScreenInfo(
+                    Handle: hMonitor,
+                    DeviceName: info.szDevice,
+                    Bounds: bounds,
+                    WorkingArea: work,
+                    DpiScale: GetMonitorDpiScale(hMonitor),
+                    IsPrimary: (info.dwFlags & 1) != 0
+                )
+            );
             return true;
         };
 
@@ -120,7 +141,10 @@ public sealed class Win32CaptureService : ICaptureService
 
     private static double GetMonitorDpiScale(IntPtr hMonitor)
     {
-        if (Win32.GetDpiForMonitor(hMonitor, Win32.MDT_EFFECTIVE_DPI, out var dpiX, out _) == 0 && dpiX > 0)
+        if (
+            Win32.GetDpiForMonitor(hMonitor, Win32.MDT_EFFECTIVE_DPI, out var dpiX, out _) == 0
+            && dpiX > 0
+        )
             return dpiX / 96.0;
         return 1.0;
     }
@@ -143,11 +167,15 @@ public sealed class Win32CaptureService : ICaptureService
         return physical.FirstOrDefault(s => s.IsPrimary) ?? physical[0];
     }
 
-    public WriteableBitmap CaptureScreen(ScreenInfo screen)
-        => CaptureScreenRect((int)screen.Bounds.X, (int)screen.Bounds.Y, (int)screen.Bounds.Width, (int)screen.Bounds.Height);
+    public WriteableBitmap CaptureScreen(ScreenInfo screen) =>
+        CaptureScreenRect(
+            (int)screen.Bounds.X,
+            (int)screen.Bounds.Y,
+            (int)screen.Bounds.Width,
+            (int)screen.Bounds.Height
+        );
 
-    public WriteableBitmap CaptureScreenRect(
-        int physicalX, int physicalY, int width, int height)
+    public WriteableBitmap CaptureScreenRect(int physicalX, int physicalY, int width, int height)
     {
         if (width <= 0 || height <= 0)
             throw new ArgumentException("Capture rect has zero area.", nameof(width));
@@ -158,28 +186,58 @@ public sealed class Win32CaptureService : ICaptureService
         return CaptureDesktopBitBlt(physicalX, physicalY, width, height);
     }
 
-    private static void ClampToVirtualDesktop(ref int physicalX, ref int physicalY, ref int width, ref int height)
+    private static void ClampToVirtualDesktop(
+        ref int physicalX,
+        ref int physicalY,
+        ref int width,
+        ref int height
+    )
     {
-        int vLeft = int.MaxValue, vTop = int.MaxValue, vRight = int.MinValue, vBottom = int.MinValue;
+        int vLeft = int.MaxValue,
+            vTop = int.MaxValue,
+            vRight = int.MinValue,
+            vBottom = int.MinValue;
         foreach (var s in new Win32CaptureService().GetScreens())
         {
-            if (s.Bounds.X < vLeft) vLeft = (int)s.Bounds.X;
-            if (s.Bounds.Y < vTop) vTop = (int)s.Bounds.Y;
-            if (s.Bounds.Right > vRight) vRight = (int)s.Bounds.Right;
-            if (s.Bounds.Bottom > vBottom) vBottom = (int)s.Bounds.Bottom;
+            if (s.Bounds.X < vLeft)
+                vLeft = (int)s.Bounds.X;
+            if (s.Bounds.Y < vTop)
+                vTop = (int)s.Bounds.Y;
+            if (s.Bounds.Right > vRight)
+                vRight = (int)s.Bounds.Right;
+            if (s.Bounds.Bottom > vBottom)
+                vBottom = (int)s.Bounds.Bottom;
         }
-        if (physicalX < vLeft) { width -= vLeft - physicalX; physicalX = vLeft; }
-        if (physicalY < vTop) { height -= vTop - physicalY; physicalY = vTop; }
-        if (physicalX + width > vRight) width = vRight - physicalX;
-        if (physicalY + height > vBottom) height = vBottom - physicalY;
+        if (physicalX < vLeft)
+        {
+            width -= vLeft - physicalX;
+            physicalX = vLeft;
+        }
+        if (physicalY < vTop)
+        {
+            height -= vTop - physicalY;
+            physicalY = vTop;
+        }
+        if (physicalX + width > vRight)
+            width = vRight - physicalX;
+        if (physicalY + height > vBottom)
+            height = vBottom - physicalY;
         if (width <= 0 || height <= 0)
-            throw new ArgumentException("Capture rect is outside the virtual desktop.", nameof(width));
+            throw new ArgumentException(
+                "Capture rect is outside the virtual desktop.",
+                nameof(width)
+            );
     }
 
     /// <summary>
     /// 从屏幕 DC BitBlt。滚动挖洞后，选区矩形读到的即为洞下 live 桌面像素。
     /// </summary>
-    private static WriteableBitmap CaptureDesktopBitBlt(int physicalX, int physicalY, int width, int height)
+    private static WriteableBitmap CaptureDesktopBitBlt(
+        int physicalX,
+        int physicalY,
+        int width,
+        int height
+    )
     {
         IntPtr screenDc = Win32.GetDC(IntPtr.Zero);
         if (screenDc == IntPtr.Zero)
@@ -195,8 +253,19 @@ public sealed class Win32CaptureService : ICaptureService
             bmp = Win32.CreateCompatibleBitmap(screenDc, width, height);
             old = Win32.SelectObject(memDc, bmp);
 
-            if (!Win32.BitBlt(memDc, 0, 0, width, height, screenDc, physicalX, physicalY,
-                    Win32.SRCCOPY | (int)Win32.CAPTUREBLT))
+            if (
+                !Win32.BitBlt(
+                    memDc,
+                    0,
+                    0,
+                    width,
+                    height,
+                    screenDc,
+                    physicalX,
+                    physicalY,
+                    Win32.SRCCOPY | (int)Win32.CAPTUREBLT
+                )
+            )
                 throw new InvalidOperationException("BitBlt failed.");
 
             var result = ReadBitmapFromDc(memDc, bmp, width, height, screenDc, out bits);
@@ -205,16 +274,27 @@ public sealed class Win32CaptureService : ICaptureService
         }
         finally
         {
-            if (bits != IntPtr.Zero) Marshal.FreeHGlobal(bits);
-            if (old != IntPtr.Zero && memDc != IntPtr.Zero) Win32.SelectObject(memDc, old);
-            if (bmp != IntPtr.Zero) Win32.DeleteObject(bmp);
-            if (memDc != IntPtr.Zero) Win32.DeleteDC(memDc);
-            if (screenDc != IntPtr.Zero) Win32.ReleaseDC(IntPtr.Zero, screenDc);
+            if (bits != IntPtr.Zero)
+                Marshal.FreeHGlobal(bits);
+            if (old != IntPtr.Zero && memDc != IntPtr.Zero)
+                Win32.SelectObject(memDc, old);
+            if (bmp != IntPtr.Zero)
+                Win32.DeleteObject(bmp);
+            if (memDc != IntPtr.Zero)
+                Win32.DeleteDC(memDc);
+            if (screenDc != IntPtr.Zero)
+                Win32.ReleaseDC(IntPtr.Zero, screenDc);
         }
     }
 
     private static WriteableBitmap? ReadBitmapFromDc(
-        IntPtr memDc, IntPtr hBitmap, int w, int h, IntPtr refDc, out IntPtr bits)
+        IntPtr memDc,
+        IntPtr hBitmap,
+        int w,
+        int h,
+        IntPtr refDc,
+        out IntPtr bits
+    )
     {
         bits = IntPtr.Zero;
         var bmi = new Win32.BITMAPINFO
@@ -234,7 +314,15 @@ public sealed class Win32CaptureService : ICaptureService
         int bufLen = stride * h;
         bits = Marshal.AllocHGlobal(bufLen);
 
-        int lines = Win32.GetDIBits(memDc, hBitmap, 0, (uint)h, bits, ref bmi, Win32.DIB_RGB_COLORS);
+        int lines = Win32.GetDIBits(
+            memDc,
+            hBitmap,
+            0,
+            (uint)h,
+            bits,
+            ref bmi,
+            Win32.DIB_RGB_COLORS
+        );
         if (lines == 0)
             return null;
 
@@ -242,7 +330,8 @@ public sealed class Win32CaptureService : ICaptureService
             new PixelSize(w, h),
             new Vector(96, 96),
             PixelFormat.Bgra8888,
-            AlphaFormat.Opaque);
+            AlphaFormat.Opaque
+        );
         using (var lk = wb.Lock())
         {
             unsafe

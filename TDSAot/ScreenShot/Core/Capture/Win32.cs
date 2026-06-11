@@ -26,7 +26,10 @@ internal static class Win32
     [StructLayout(LayoutKind.Sequential)]
     public struct RECT
     {
-        public int Left, Top, Right, Bottom;
+        public int Left,
+            Top,
+            Right,
+            Bottom;
         public int Width => Right - Left;
         public int Height => Bottom - Top;
     }
@@ -38,6 +41,7 @@ internal static class Win32
         public RECT rcMonitor;
         public RECT rcWork;
         public uint dwFlags;
+
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
         public string szDevice;
     }
@@ -45,7 +49,8 @@ internal static class Win32
     [StructLayout(LayoutKind.Sequential)]
     public struct POINT
     {
-        public int X, Y;
+        public int X,
+            Y;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -71,7 +76,12 @@ internal static class Win32
         public uint bmiColors; // padding
     }
 
-    public delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
+    public delegate bool MonitorEnumProc(
+        IntPtr hMonitor,
+        IntPtr hdcMonitor,
+        ref RECT lprcMonitor,
+        IntPtr dwData
+    );
 
     [DllImport(User32, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -79,7 +89,8 @@ internal static class Win32
         IntPtr hdc,
         IntPtr lprcClip,
         MonitorEnumProc lpfnEnum,
-        IntPtr dwData);
+        IntPtr dwData
+    );
 
     [DllImport(User32, SetLastError = true, CharSet = CharSet.Unicode)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -111,13 +122,27 @@ internal static class Win32
     [DllImport(Gdi32, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool BitBlt(
-        IntPtr hdcDest, int nXDest, int nYDest, int nWidth, int nHeight,
-        IntPtr hdcSrc, int nXSrc, int nYSrc, int dwRop);
+        IntPtr hdcDest,
+        int nXDest,
+        int nYDest,
+        int nWidth,
+        int nHeight,
+        IntPtr hdcSrc,
+        int nXSrc,
+        int nYSrc,
+        int dwRop
+    );
 
     [DllImport(Gdi32, SetLastError = true)]
     public static extern int GetDIBits(
-        IntPtr hdc, IntPtr hbm, uint start, uint lines,
-        IntPtr lpvBits, ref BITMAPINFO lpbmi, uint usage);
+        IntPtr hdc,
+        IntPtr hbm,
+        uint start,
+        uint lines,
+        IntPtr lpvBits,
+        ref BITMAPINFO lpbmi,
+        uint usage
+    );
 
     [DllImport(User32, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -132,7 +157,12 @@ internal static class Win32
     public static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
 
     [DllImport(Shcore, SetLastError = true)]
-    public static extern int GetDpiForMonitor(IntPtr hMonitor, int dpiType, out uint dpiX, out uint dpiY);
+    public static extern int GetDpiForMonitor(
+        IntPtr hMonitor,
+        int dpiType,
+        out uint dpiX,
+        out uint dpiY
+    );
 
     [DllImport(User32, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -143,7 +173,8 @@ internal static class Win32
         int y,
         int cx,
         int cy,
-        uint uFlags);
+        uint uFlags
+    );
 
     [DllImport(User32)]
     public static extern IntPtr WindowFromPoint(POINT point);
@@ -157,10 +188,19 @@ internal static class Win32
     public static extern IntPtr CreateRectRgn(int left, int top, int right, int bottom);
 
     [DllImport(Gdi32)]
-    public static extern int CombineRgn(IntPtr hrgnDst, IntPtr hrgnSrc1, IntPtr hrgnSrc2, int iMode);
+    public static extern int CombineRgn(
+        IntPtr hrgnDst,
+        IntPtr hrgnSrc1,
+        IntPtr hrgnSrc2,
+        int iMode
+    );
 
     [DllImport(User32)]
-    public static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, [MarshalAs(UnmanagedType.Bool)] bool bRedraw);
+    public static extern int SetWindowRgn(
+        IntPtr hWnd,
+        IntPtr hRgn,
+        [MarshalAs(UnmanagedType.Bool)] bool bRedraw
+    );
 
     [DllImport(User32)]
     [return: MarshalAs(UnmanagedType.Bool)]
