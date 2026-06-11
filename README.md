@@ -88,6 +88,14 @@ You can change the key and modifier in Settings (letters A–Z, F1–F12, and mo
 5. **Cancel** or **Esc** — discards and closes the overlay.
 5. **取消** 或 **Esc** — 放弃并关闭截屏界面。
 
+<img width="1280" height="987" alt="VSSNAP" src="https://github.com/user-attachments/assets/73f2c39e-cfd1-479a-a98c-75bd37d7ea70" />
+
+<img width="1280" height="987" alt="GITSNAP" src="https://github.com/user-attachments/assets/ebfa8c44-4172-466a-ba98-5dfd151228f3" />
+
+
+
+
+
 ### Configuration
 ### 配置项
 
